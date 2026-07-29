@@ -1,221 +1,298 @@
 import { useState, useEffect } from 'react'
 import api from '../services/api'
-import { ArrowLeft, ArrowRight, Save, Plus, Trash2, Eye } from 'lucide-react'
+import PersonalInfo from '../components/ResumeBuilder/PersonalInfo'
+import Education from '../components/ResumeBuilder/Education'
+import Skills from '../components/ResumeBuilder/Skills'
+import Projects from '../components/ResumeBuilder/Projects'
+import Experience from '../components/ResumeBuilder/Experience'
+import Certifications from '../components/ResumeBuilder/Certifications'
+import Achievements from '../components/ResumeBuilder/Achievements'
+import Languages from '../components/ResumeBuilder/Languages'
+import ResumePreview from '../components/ResumeBuilder/ResumePreview'
+import ATSScore from '../components/ResumeBuilder/ATSScore'
+import { FileText, Plus, Eye, Download, Sparkles, RotateCcw, Trash2, Check } from 'lucide-react'
+import { Link } from 'react-router-dom'
+
+const SECTION_META = {
+  personalInfo: { label: 'Personal Info', icon: '👤', required: true },
+  education: { label: 'Education', icon: '🎓', required: true },
+  skills: { label: 'Skills', icon: '⚡', required: true },
+  experience: { label: 'Experience', icon: '💼', required: true },
+  projects: { label: 'Projects', icon: '🚀', required: true },
+  certifications: { label: 'Certifications', icon: '📜', required: false },
+  achievements: { label: 'Achievements', icon: '🏆', required: false },
+  languages: { label: 'Languages', icon: '🌐', required: false },
+}
+
+const SECTION_ORDER = ['personalInfo', 'education', 'skills', 'experience', 'projects', 'certifications', 'achievements', 'languages']
 
 export default function ResumeBuilder() {
-  const [templates, setTemplates] = useState([])
-  const [selectedTemplate, setSelectedTemplate] = useState(null)
-  const [step, setStep] = useState('template') // template | edit | preview
-  const [sections, setSections] = useState({})
+  const [resumes, setResumes] = useState([])
+  const [currentId, setCurrentId] = useState(null)
+  const [sections, setSections] = useState([])
+  const [activeSection, setActiveSection] = useState('personalInfo')
+  const [showPreview, setShowPreview] = useState(false)
   const [atsScore, setAtsScore] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [generatingSummary, setGeneratingSummary] = useState(false)
+  const [showNameModal, setShowNameModal] = useState(false)
+  const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    api.get('/resume-builder/templates').then(r => setTemplates(r.data)).catch(() => {})
-  }, [])
+  useEffect(() => { loadResumes() }, [])
 
-  const selectTemplate = (t) => {
-    setSelectedTemplate(t)
-    const initial = {}
-    t.sections.forEach(s => { initial[s.name] = s.name === 'skills' ? { items: [] } : { text: '' } })
-    setSections(initial)
-    setStep('edit')
+  const loadResumes = async () => {
+    try {
+      const { data } = await api.get('/resume-builder/user')
+      setResumes(data || [])
+    } catch { /* ignore */ }
   }
 
-  const updateSection = (name, data) => {
-    const updated = { ...sections, [name]: data }
+  const loadResume = async (id) => {
+    try {
+      const { data } = await api.get(`/resume-builder/${id}`)
+      setCurrentId(id)
+      setSections(data.sections || [])
+      checkATS(data.sections || [])
+    } catch { /* ignore */ }
+  }
+
+  const createResume = async () => {
+    const defaultSections = [
+      { name: 'personalInfo', data: {} },
+      { name: 'education', data: { entries: [] } },
+      { name: 'skills', data: { items: [] } },
+      { name: 'experience', data: { entries: [] } },
+      { name: 'projects', data: { entries: [] } },
+    ]
+    try {
+      const { data } = await api.post('/resume-builder/create', { sections: defaultSections })
+      setCurrentId(data.id)
+      setSections(defaultSections)
+      checkATS(defaultSections)
+      setActiveSection('personalInfo')
+      await loadResumes()
+    } catch { /* ignore */ }
+  }
+
+  const updateSection = (name, sectionData) => {
+    const updated = [...sections]
+    const idx = updated.findIndex(s => s.name === name)
+    if (idx >= 0) {
+      updated[idx] = { name, data: sectionData }
+    } else {
+      updated.push({ name, data: sectionData })
+    }
     setSections(updated)
-    const sectionsList = Object.entries(updated).map(([name, data]) => ({ name, data }))
-    api.post('/resume-builder/ats-score', { sections: sectionsList }).then(r => setAtsScore(r.data)).catch(() => {})
+    checkATS(updated)
   }
 
-  const addSkill = (skill) => {
-    const current = sections.skills?.items || []
-    if (!current.includes(skill)) {
-      updateSection('skills', { items: [...current, skill] })
+  const checkATS = async (secs) => {
+    try {
+      const { data } = await api.post('/resume-builder/ats-score', { sections: secs })
+      setAtsScore(data)
+    } catch { /* ignore */ }
+  }
+
+  const saveResume = async () => {
+    if (!currentId) return
+    setSaving(true)
+    try {
+      await api.put(`/resume-builder/${currentId}`, { sections })
+    } catch { /* ignore */ }
+    setSaving(false)
+  }
+
+  const deleteResume = async (id) => {
+    try {
+      await api.delete(`/resume-builder/${id}`)
+      if (currentId === id) { setCurrentId(null); setSections([]); setAtsScore(null) }
+      await loadResumes()
+    } catch { /* ignore */ }
+  }
+
+  const exportPDF = async () => {
+    if (!currentId) return
+    try {
+      const resp = await api.post(`/resume-builder/${currentId}/export`, {}, { responseType: 'blob' })
+      const url = URL.createObjectURL(new Blob([resp.data], { type: 'application/pdf' }))
+      const a = document.createElement('a'); a.href = url; a.download = 'resume.pdf'; a.click()
+    } catch { /* ignore */ }
+  }
+
+  const generateAISummary = async () => {
+    setGeneratingSummary(true)
+    try {
+      const { data } = await api.post('/resume-builder/ai-summary', { sections })
+      if (data.summary && !data.summary.includes('unavailable')) {
+        const personal = sections.find(s => s.name === 'personalInfo')
+        if (personal) {
+          updateSection('personalInfo', { ...personal.data, summary: data.summary })
+        }
+      }
+    } catch { /* ignore */ }
+    setGeneratingSummary(false)
+  }
+
+  const getData = (name) => {
+    const s = sections.find(sec => sec.name === name)
+    return s?.data || {}
+  }
+
+  const getSectionProgress = () => {
+    if (sections.length === 0) return { completed: 0, total: 5 }
+    const required = ['personalInfo', 'education', 'skills', 'experience', 'projects']
+    let completed = 0
+    required.forEach(name => {
+      const data = getData(name)
+      if (name === 'personalInfo' && data.fullName && data.email) completed++
+      else if (name === 'education' && data.entries?.length > 0) completed++
+      else if (name === 'skills' && data.items?.length > 0) completed++
+      else if (name === 'experience' && data.entries?.length > 0) completed++
+      else if (name === 'projects' && data.entries?.length > 0) completed++
+    })
+    return { completed, total: 5 }
+  }
+
+  const activeSections = SECTION_ORDER.filter(name => {
+    const meta = SECTION_META[name]
+    if (!meta.required) {
+      const data = getData(name)
+      const hasContent = data.entries?.length > 0 || data.items?.length > 0
+      if (!hasContent) return false
     }
-  }
+    return meta.label.toLowerCase().includes(search.toLowerCase())
+  })
 
-  const removeSkill = (skill) => {
-    const current = sections.skills?.items || []
-    updateSection('skills', { items: current.filter(s => s !== skill) })
-  }
+  const progress = getSectionProgress()
 
-  const renderSectionEditor = (section) => {
-    switch (section.name) {
-      case 'summary':
-        return (
-          <textarea className="input-field" rows={3} placeholder="2-3 line professional summary..."
-            value={sections[section.name]?.text || ''}
-            onChange={(e) => updateSection(section.name, { text: e.target.value })} />
-        )
-      case 'education':
-        return <SectionForm fields={['degree', 'institute', 'year', 'gpa']} data={sections[section.name]?.entries || []}
-          onChange={(entries) => updateSection(section.name, { entries })} />
-      case 'experience':
-        return <SectionForm fields={['company', 'role', 'duration', 'description']} data={sections[section.name]?.entries || []}
-          onChange={(entries) => updateSection(section.name, { entries })} />
-      case 'projects':
-        return <SectionForm fields={['title', 'description', 'techStack', 'link']} data={sections[section.name]?.entries || []}
-          onChange={(entries) => updateSection(section.name, { entries })} />
-      case 'skills':
-        return <SkillEditor skills={sections.skills?.items || []} onAdd={addSkill} onRemove={removeSkill} />
-      case 'certifications':
-        return <SectionForm fields={['name', 'issuer']} data={sections[section.name]?.entries || []}
-          onChange={(entries) => updateSection(section.name, { entries })} />
-      default:
-        return <p className="text-gray-400">Editor for {section.name}</p>
-    }
-  }
-
-  if (step === 'template') {
+  if (!currentId) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Resume Builder</h1>
-        <p className="text-gray-500">Choose a template to get started</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {templates.map((t) => (
-            <div key={t.id} className="card cursor-pointer hover:border-primary-400 transition-colors"
-              onClick={() => selectTemplate(t)}>
-              <h3 className="font-semibold">{t.name}</h3>
-              <p className="text-sm text-gray-500">{t.targetRole}</p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {t.sections?.map((s, i) => (
-                  <span key={i} className="badge bg-gray-100 text-gray-600">{s.name}</span>
-                ))}
-              </div>
-            </div>
-          ))}
+      <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold">ATS-Friendly Resume Builder</h1>
+            <p className="text-gray-500">Build, optimize, and export ATS-compliant resumes</p>
+          </div>
+          <button onClick={createResume} className="btn-primary flex items-center gap-2">
+            <Plus size={18} /> New Resume
+          </button>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {resumes.map((r) => {
+            const data = {}
+            ;(r.sections || []).forEach(s => { data[s.name] = s.data })
+            const personal = data.personalInfo || {}
+            return (
+              <div key={r.id} className="card cursor-pointer hover:border-primary-400 transition-all group relative" onClick={() => loadResume(r.id)}>
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <FileText size={20} className="text-primary-600" />
+                  </div>
+                  <button onClick={(e) => { e.stopPropagation(); deleteResume(r.id) }} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+                <h3 className="font-semibold">{personal.fullName || 'Untitled Resume'}</h3>
+                <p className="text-sm text-gray-500">{personal.targetRole || 'No target role set'}</p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {(r.sections || []).map(s => (
+                    <span key={s.name} className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded">{SECTION_META[s.name]?.icon}</span>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 mt-2">Updated {r.updatedAt ? new Date(r.updatedAt).toLocaleDateString() : 'never'}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        {resumes.length === 0 && (
+          <div className="text-center py-16">
+            <FileText size={48} className="mx-auto text-gray-300 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-400 mb-2">No resumes yet</h2>
+            <p className="text-gray-400 mb-4">Create your first ATS-optimized resume</p>
+            <button onClick={createResume} className="btn-primary">Create Resume</button>
+          </div>
+        )}
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-4 max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
-        <div>
-          <button onClick={() => setStep('template')} className="text-gray-500 hover:text-gray-700 flex items-center gap-1 mb-2">
-            <ArrowLeft size={16} /> Back to templates
-          </button>
-          <h1 className="text-2xl font-bold">{selectedTemplate?.name}</h1>
+        <div className="flex items-center gap-4">
+          <button onClick={() => setCurrentId(null)} className="text-gray-400 hover:text-gray-600 text-sm">← Back</button>
+          <div>
+            <h1 className="text-xl font-bold">{getData('personalInfo')?.fullName || 'Resume Builder'}</h1>
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <span>{progress.completed}/{progress.total} sections filled</span>
+              {progress.completed === progress.total && <Check size={14} className="text-green-500" />}
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setStep('preview')} className="btn-secondary flex items-center gap-2">
-            <Eye size={16} /> Preview
+          <button onClick={generateAISummary} disabled={generatingSummary} className="btn-secondary text-sm flex items-center gap-1">
+            <Sparkles size={14} /> {generatingSummary ? 'Generating...' : 'AI Summary'}
+          </button>
+          <button onClick={() => setShowPreview(!showPreview)} className="btn-secondary text-sm flex items-center gap-1">
+            <Eye size={14} /> {showPreview ? 'Editor' : 'Preview'}
+          </button>
+          <button onClick={exportPDF} className="btn-secondary text-sm flex items-center gap-1">
+            <Download size={14} /> PDF
+          </button>
+          <button onClick={saveResume} disabled={saving} className="btn-primary text-sm flex items-center gap-1">
+            {saving ? <RotateCcw size={14} className="animate-spin" /> : <Check size={14} />}
+            {saving ? 'Saving...' : 'Save'}
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          {selectedTemplate?.sections?.map((section) => (
-            <div key={section.name} className="card">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold capitalize">{section.name}</h3>
-                {!section.required && (
-                  <button className="text-gray-400 hover:text-red-500"><Trash2 size={16} /></button>
-                )}
-              </div>
-              <p className="text-xs text-gray-400 mb-2">{section.hint}</p>
-              {renderSectionEditor(section)}
+      {showPreview ? (
+        <div className="max-w-3xl mx-auto">
+          <ResumePreview sections={sections} />
+        </div>
+      ) : (
+        <div className="flex gap-4">
+          <div className="w-56 shrink-0 space-y-1">
+            <input className="input-field text-xs mb-2" placeholder="Search sections..." value={search} onChange={e => setSearch(e.target.value)} />
+            {SECTION_ORDER.map(name => {
+              const meta = SECTION_META[name]
+              if (search && !meta.label.toLowerCase().includes(search.toLowerCase())) return null
+              const data = getData(name)
+              const hasContent = name === 'personalInfo' ? data.fullName || data.email
+                : data.entries?.length > 0 || data.items?.length > 0
+              return (
+                <button key={name} onClick={() => setActiveSection(name)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${activeSection === name ? 'bg-primary-50 text-primary-700 font-medium' : 'hover:bg-gray-50 text-gray-600'}`}>
+                  <span>{meta.icon}</span>
+                  <span className="flex-1">{meta.label}</span>
+                  {hasContent && <Check size={12} className="text-green-500 shrink-0" />}
+                  {meta.required && <span className="text-xs text-red-300">*</span>}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="card">
+              <h2 className="font-semibold mb-4">{SECTION_META[activeSection]?.label}</h2>
+              {activeSection === 'personalInfo' && <PersonalInfo data={getData('personalInfo')} onChange={updateSection} />}
+              {activeSection === 'education' && <Education data={getData('education')} onChange={updateSection} />}
+              {activeSection === 'skills' && <Skills data={getData('skills')} onChange={updateSection} />}
+              {activeSection === 'projects' && <Projects data={getData('projects')} onChange={updateSection} />}
+              {activeSection === 'experience' && <Experience data={getData('experience')} onChange={updateSection} />}
+              {activeSection === 'certifications' && <Certifications data={getData('certifications')} onChange={updateSection} />}
+              {activeSection === 'achievements' && <Achievements data={getData('achievements')} onChange={updateSection} />}
+              {activeSection === 'languages' && <Languages data={getData('languages')} onChange={updateSection} />}
             </div>
-          ))}
-        </div>
-
-        <div className="space-y-4">
-          <div className="card">
-            <h3 className="font-semibold mb-3">ATS Live Score</h3>
-            {atsScore ? (
-              <>
-                <div className={`text-3xl font-bold text-center ${atsScore.overall >= 80 ? 'text-green-600' : atsScore.overall >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-                  {atsScore.overall}%
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                  <div className={`h-2 rounded-full ${atsScore.overall >= 80 ? 'bg-green-500' : atsScore.overall >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                    style={{ width: `${atsScore.overall}%` }} />
-                </div>
-                <div className="mt-3 space-y-2 text-sm">
-                  <div className="flex justify-between"><span>Keywords</span><span>{atsScore.keywordScore}%</span></div>
-                  <div className="flex justify-between"><span>Format</span><span>{atsScore.formatScore}%</span></div>
-                  <div className="flex justify-between"><span>Length</span><span>{atsScore.lengthScore}%</span></div>
-                  <div className="flex justify-between"><span>Verbs</span><span>{atsScore.verbScore}%</span></div>
-                </div>
-              </>
-            ) : (
-              <p className="text-gray-400 text-sm">Start editing to see your ATS score</p>
-            )}
           </div>
-          <div className="card">
-            <h3 className="font-semibold mb-3">Suggestions</h3>
-            {atsScore?.suggestions?.map((s, i) => (
-              <div key={i} className="text-xs text-gray-500 mb-2">• {s}</div>
-            )) || <p className="text-gray-400 text-sm">Suggestions will appear as you edit</p>}
+
+          <div className="w-72 shrink-0">
+            <ATSScore score={atsScore} />
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
-
-function SectionForm({ fields, data, onChange }) {
-  const addEntry = () => {
-    const entry = {}
-    fields.forEach(f => { entry[f] = '' })
-    onChange([...data, entry])
-  }
-  const updateEntry = (index, key, value) => {
-    const updated = [...data]
-    updated[index] = { ...updated[index], [key]: value }
-    onChange(updated)
-  }
-  const removeEntry = (index) => {
-    onChange(data.filter((_, i) => i !== index))
-  }
-  return (
-    <div className="space-y-3">
-      {data.map((entry, i) => (
-        <div key={i} className="border border-gray-200 rounded-lg p-3 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {fields.map((f) => (
-              <input key={f} className="input-field text-sm" placeholder={f}
-                value={entry[f] || ''} onChange={(e) => updateEntry(i, f, e.target.value)} />
-            ))}
-          </div>
-          <button onClick={() => removeEntry(i)} className="text-red-500 text-xs hover:underline">Remove</button>
-        </div>
-      ))}
-      <button onClick={addEntry} className="btn-secondary text-sm flex items-center gap-1">
-        <Plus size={14} /> Add {fields[0] || 'Entry'}
-      </button>
-    </div>
-  )
-}
-
-function SkillEditor({ skills, onAdd, onRemove }) {
-  const [input, setInput] = useState('')
-  const commonSkills = ['Python', 'Java', 'JavaScript', 'React', 'Node.js', 'SQL', 'MongoDB', 'Docker', 'AWS', 'Git']
-  const add = () => {
-    if (input.trim()) { onAdd(input.trim()); setInput('') }
-  }
-  return (
-    <div>
-      <div className="flex flex-wrap gap-1 mb-2">
-        {skills.map((s, i) => (
-          <span key={i} className="badge bg-primary-100 text-primary-700 flex items-center gap-1">
-            {s} <button onClick={() => onRemove(s)} className="hover:text-red-500">×</button>
-          </span>
-        ))}
-      </div>
-      <div className="flex gap-2">
-        <input className="input-field flex-1" placeholder="Add a skill" value={input}
-          onChange={(e) => setInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && add()} />
-        <button onClick={add} className="btn-primary text-sm">Add</button>
-      </div>
-      <div className="flex flex-wrap gap-1 mt-2">
-        {commonSkills.filter(s => !skills.includes(s)).slice(0, 8).map((s) => (
-          <button key={s} onClick={() => onAdd(s)} className="badge bg-gray-100 text-gray-600 hover:bg-gray-200">{s}</button>
-        ))}
-      </div>
+      )}
     </div>
   )
 }
