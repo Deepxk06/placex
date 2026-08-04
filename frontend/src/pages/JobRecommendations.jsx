@@ -14,12 +14,14 @@ export default function JobRecommendations() {
     setLoading(true)
     if (tab === 'recommended') {
       api.get('/jobs/recommended').then(r => { setRecommended(r.data); setLoading(false) }).catch(() => setLoading(false))
+    } else if (tab === 'internships') {
+      api.get('/jobs/internships').then(r => { setRecommended(r.data); setLoading(false) }).catch(() => setLoading(false))
     } else {
       api.get('/jobs/scraped/recommended').then(r => { setScraped(r.data); setLoading(false) }).catch(() => setLoading(false))
     }
   }, [tab])
 
-  const jobs = tab === 'recommended' ? recommended : scraped
+  const jobs = tab === 'scraped' ? scraped : recommended
 
   return (
     <div className="space-y-6 max-w-5xl">

@@ -7,12 +7,15 @@ export default function SkillAssessment() {
   const [tab, setTab] = useState('coding')
   const [problems, setProblems] = useState([])
   const [aptitudeQuestions, setAptitudeQuestions] = useState([])
+  const [mcqQuestions, setMcqQuestions] = useState([])
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [code, setCode] = useState('')
   const [language, setLanguage] = useState('python')
   const [result, setResult] = useState(null)
   const [aptitudeAnswers, setAptitudeAnswers] = useState({})
   const [aptitudeResult, setAptitudeResult] = useState(null)
+  const [mcqAnswers, setMcqAnswers] = useState({})
+  const [mcqResult, setMcqResult] = useState(null)
   const [skillGap, setSkillGap] = useState(null)
   const [loading, setLoading] = useState(false)
 
@@ -21,6 +24,8 @@ export default function SkillAssessment() {
       api.get('/assessment/coding').then(r => setProblems(r.data)).catch(() => {})
     } else if (tab === 'aptitude') {
       api.get('/assessment/aptitude').then(r => setAptitudeQuestions(r.data)).catch(() => {})
+    } else if (tab === 'mcq') {
+      api.get('/assessment/mcq').then(r => setMcqQuestions(r.data)).catch(() => {})
     } else if (tab === 'skill-gap') {
       api.get('/assessment/skill-gap').then(r => setSkillGap(r.data)).catch(() => {})
     }
@@ -41,6 +46,15 @@ export default function SkillAssessment() {
     try {
       const res = await api.post('/assessment/aptitude/submit', answers)
       setAptitudeResult(res.data)
+    } catch {} finally { setLoading(false) }
+  }
+
+  const submitMCQ = async () => {
+    setLoading(true)
+    const answers = Object.entries(mcqAnswers).map(([qId, selectedIndex]) => ({ questionId: qId, selectedIndex, timeTaken: 30 }))
+    try {
+      const res = await api.post('/assessment/mcq/submit', answers)
+      setMcqResult(res.data)
     } catch {} finally { setLoading(false) }
   }
 
@@ -96,12 +110,10 @@ export default function SkillAssessment() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <select className="input-field w-32" value={language} onChange={e => setLanguage(e.target.value)}>
-                    <option value="python">Python</option>
-                    <option value="java">Java</option>
-                    <option value="cpp">C++</option>
-                    <option value="javascript">JavaScript</option>
-                  </select>
+                <select className="input-field w-32" value={language} onChange={e => setLanguage(e.target.value)}>
+                  <option value="python">Python</option>
+                  <option value="javascript">JavaScript</option>
+                </select>
                 </div>
                 <textarea className="input-field font-mono text-sm" rows={10}
                   placeholder="Write your code here..." value={code} onChange={e => setCode(e.target.value)} />
@@ -167,8 +179,89 @@ export default function SkillAssessment() {
       )}
 
       {tab === 'mcq' && (
-        <div className="card">
-          <p className="text-gray-500">Technical MCQ module is under development. Please check back soon.</p>
+        <div className="space-y-4">
+          {!mcqResult ? (
+            <>
+              {mcqQuestions.map((q, i) => (
+                <div key={q._id} className="card">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-medium text-gray-400">{i + 1}. {q.topic}</span>
+                    <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'medium' ? 'badge-warning' : 'badge-danger'}`}>{q.difficulty}</span>
+                  </div>
+                  <p className="font-medium mb-3">{q.question}</p>
+                  <div className="space-y-2">
+                    {q.options.map((opt, j) => (
+                      <label key={j} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors ${
+                        mcqAnswers[q._id] === j ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:bg-gray-50'
+                      }`}>
+                        <input type="radio" name={`mcq_${q._id}`} checked={mcqAnswers[q._id] === j}
+                          onChange={() => setMcqAnswers({...mcqAnswers, [q._id]: j})} className="accent-primary-600" />
+                        {opt}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {mcqQuestions.length > 0 && (
+                <button onClick={submitMCQ} disabled={loading || Object.keys(mcqAnswers).length === 0} className="btn-primary">
+                  {loading ? 'Submitting...' : `Submit Answers (${Object.keys(mcqAnswers).length}/${mcqQuestions.length} answered)`}
+                </button>
+              )}
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="card text-center">
+                <h2 className="text-xl font-bold mb-2">Your Score</h2>
+                <div className={`text-4xl font-bold mb-2 ${getScoreColor(mcqResult.percentage)}`}>
+                  {mcqResult.percentage}%
+                </div>
+                <p className="text-gray-500">{mcqResult.score}/{mcqResult.total} correct</p>
+                <button onClick={() => { setMcqResult(null); setMcqAnswers({}) }} className="btn-secondary mt-4">
+                  Try Again
+                </button>
+              </div>
+              {mcqResult.results?.length > 0 && (
+                <div className="card">
+                  <h2 className="font-semibold mb-3">Detailed Review</h2>
+                  <div className="space-y-3">
+                    {mcqQuestions.map((q, i) => {
+                      const r = mcqResult.results.find(res => res.questionId === q._id)
+                      if (!r) return null
+                      return (
+                        <div key={q._id} className={`p-3 rounded-lg ${r.correct ? 'bg-green-50' : 'bg-red-50'}`}>
+                          <div className="flex items-start gap-2">
+                            <span className={`text-sm font-medium ${r.correct ? 'text-green-700' : 'text-red-700'}`}>
+                              {r.correct ? '✓' : '✗'}
+                            </span>
+                            <div>
+                              <p className="text-sm font-medium">{q.question}</p>
+                              <p className="text-xs text-gray-600 mt-1">
+                                Your answer: {q.options[r.selected] ?? 'Not answered'}
+                              </p>
+                              {!r.correct && (
+                                <p className="text-xs text-green-700 mt-1">
+                                  Correct: {q.options[r.correctIndex]}
+                                </p>
+                              )}
+                              {(r.explanation || q.subtopic) && (
+                                <p className="text-xs text-gray-500 mt-1">{r.explanation || q.subtopic}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {mcqQuestions.length === 0 && !mcqResult && (
+            <div className="card text-center text-gray-400 py-10">
+              <BookOpen size={48} className="mx-auto mb-3 opacity-50" />
+              <p>No MCQ questions available yet. Check back soon!</p>
+            </div>
+          )}
         </div>
       )}
 

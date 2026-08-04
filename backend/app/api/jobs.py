@@ -76,4 +76,11 @@ async def get_internships(uid: str = Depends(verify_token)):
         stmt = select(Job).where(Job.type == "internship").order_by(Job.posted_at.desc()).limit(50)
         result = await session.execute(stmt)
         jobs = result.scalars().all()
-        return [{c.name: getattr(j, c.name) for c in Job.__table__.columns} for j in jobs]
+        return [{
+            "id": j.id, "title": j.title, "company": j.company,
+            "location": j.location, "description": j.description,
+            "requiredSkills": j.required_skills, "type": j.type,
+            "salaryRange": {"min": j.salary_min, "max": j.salary_max},
+            "salaryText": j.salary_text, "applyUrl": j.apply_url,
+            "role": j.role, "source": j.source,
+        } for j in jobs]
