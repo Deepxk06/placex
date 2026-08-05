@@ -23,11 +23,16 @@ def init_firebase():
         import firebase_admin
         from firebase_admin import credentials, auth as _firebase_auth
         cred_path = get_settings().FIREBASE_CREDENTIALS_PATH
-        if os.path.exists(cred_path):
+        creds_json = os.environ.get("FIREBASE_CREDENTIALS_JSON", "").strip()
+        if creds_json:
+            cred = credentials.Certificate(json.loads(creds_json))
+        elif os.path.exists(cred_path):
             cred = credentials.Certificate(cred_path)
-            firebase_app = firebase_admin.initialize_app(cred)
-            firebase_auth = _firebase_auth
-            print("Firebase initialized")
+        else:
+            return
+        firebase_app = firebase_admin.initialize_app(cred)
+        firebase_auth = _firebase_auth
+        print("Firebase initialized")
     except Exception as e:
         print(f"Firebase not available: {e}. Using dev auth mode.")
 

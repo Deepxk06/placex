@@ -26,9 +26,9 @@ dist/
 .DS_Store
 Thumbs.db
 
-# ML models
-backend/ai/models/
-*.pkl
+# ML models (keep trained artifacts in repo for deployment)
+backend/ai/models/*
+!backend/ai/models/*.pkl
 *.joblib
 
 # Logs
