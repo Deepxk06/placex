@@ -3,7 +3,7 @@ import json
 from app.config import get_settings
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-70b-versatile"
+MODEL = "llama-3.3-70b-versatile"
 
 
 async def generate_summary(profile: dict) -> str:

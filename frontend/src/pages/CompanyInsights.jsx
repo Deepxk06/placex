@@ -35,7 +35,7 @@ export default function CompanyInsights() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="space-y-2">
           {filtered.map((c) => (
-            <div key={c._id} className={`card cursor-pointer py-3 px-4 hover:border-primary-300 transition-colors ${selected?.companyName === c.companyName ? 'border-primary-500' : ''}`}
+            <div key={c.id} className={`card cursor-pointer py-3 px-4 hover:border-primary-300 transition-colors ${selected?.companyName === c.companyName ? 'border-primary-500' : ''}`}
               onClick={() => selectCompany(c.companyName)}>
               <div className="flex items-center gap-2">
                 <Building2 size={16} className="text-gray-400" />

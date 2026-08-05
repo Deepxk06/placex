@@ -1,4 +1,3 @@
-import fitz  # PyMuPDF
 import re
 from typing import Optional
 
@@ -15,6 +14,7 @@ SKILL_PATTERNS = {
 
 async def parse_resume_pdf(content: bytes, filename: str) -> dict:
     try:
+        import fitz  # PyMuPDF (lazy-loaded to keep startup fast)
         doc = fitz.open(stream=content, filetype="pdf")
         text = ""
         for page in doc:

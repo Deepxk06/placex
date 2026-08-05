@@ -9,12 +9,6 @@ from datetime import datetime, timezone
 router = APIRouter()
 
 
-class DevLoginRequest:
-    def __init__(self, email: str, password: str = ""):
-        self.email = email
-        self.password = password
-
-
 from pydantic import BaseModel
 
 

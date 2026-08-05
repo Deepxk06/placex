@@ -64,7 +64,7 @@ export default function JobRecommendations() {
             if (search.type && j.type !== search.type) return false
             return true
           }).map((job) => (
-            <div key={job._id} className="card hover:border-primary-200 transition-colors">
+            <div key={job.id ?? job._id} className="card hover:border-primary-200 transition-colors">
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
                   <div className="bg-gray-100 p-2 rounded-lg">

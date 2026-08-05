@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 from app.database import get_db
 from app.auth import verify_token
 from app.models import User, Resume, Assessment, Interview, Prediction
@@ -29,7 +29,7 @@ async def get_aptitude_questions(topic: str = "", difficulty: str = "", uid: str
 
 
 @router.post("/aptitude/submit")
-async def submit_aptitude(answers: list, uid: str = Depends(verify_token)):
+async def submit_aptitude(answers: list = Body(...), uid: str = Depends(verify_token)):
     async with get_db()() as session:
         from app.models import AptitudeQuestion
         score = 0
@@ -125,7 +125,7 @@ async def get_mcq_questions(topic: str = "", uid: str = Depends(verify_token)):
 
 
 @router.post("/mcq/submit")
-async def submit_mcq(answers: list, uid: str = Depends(verify_token)):
+async def submit_mcq(answers: list = Body(...), uid: str = Depends(verify_token)):
     return await submit_aptitude(answers, uid)
 
 

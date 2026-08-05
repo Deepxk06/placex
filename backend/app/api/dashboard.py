@@ -20,7 +20,7 @@ async def get_student_dashboard(uid: str = Depends(verify_token)):
         interviews = (await session.execute(stmt)).scalars().all()
         stmt = select(Prediction).where(Prediction.user_id == uid).order_by(Prediction.created_at.desc()).limit(1)
         prediction = (await session.execute(stmt)).scalar_one_or_none()
-        resume_score = (resume.ats_score or {}).get("overall", None) if resume else None
+        resume_score = resume.ats_score if resume else None
         coding_assessments = [a for a in assessments if a.type == "coding"]
         aptitude_assessments = [a for a in assessments if a.type == "aptitude"]
         coding_progress = {
@@ -53,7 +53,7 @@ async def get_student_dashboard(uid: str = Depends(verify_token)):
             "interviewScore": interview_performance["avgScore"],
             "interviewPerformance": interview_performance,
             "placementReadiness": readiness,
-            "recentActivity": sorted(recent, key=lambda x: x.get("time") or datetime.min, reverse=True)[:10],
+            "recentActivity": sorted(recent, key=lambda x: x.get("time") or datetime.min.replace(tzinfo=timezone.utc), reverse=True)[:10],
         }
 
 

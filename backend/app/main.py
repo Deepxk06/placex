@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -14,13 +15,37 @@ from sqlalchemy import text
 settings = get_settings()
 
 
+async def ensure_schema():
+    """Verify DB connectivity and create tables only if missing.
+
+    Uses a single `to_regclass` check (1 round-trip) instead of running
+    create_all (which issues ~20+ metadata queries) on every startup.
+    """
+    if db_mod.engine is None:
+        await connect_db()
+    try:
+        async with db_mod.engine.connect() as conn:
+            exists = (
+                await conn.execute(text("SELECT to_regclass('users')"))
+            ).scalar()
+        if not exists:
+            async with db_mod.engine.begin() as conn:
+                await conn.run_sync(Base.metadata.create_all)
+    except Exception as e:
+        print(f"Startup DB init skipped: {e}")
+
+
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
     await connect_db()
-    async with db_mod.engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
     init_firebase()
+    startup_task = asyncio.create_task(ensure_schema())
     yield
+    startup_task.cancel()
+    try:
+        await startup_task
+    except (asyncio.CancelledError, Exception):
+        pass
     await disconnect_db()
 
 

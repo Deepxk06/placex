@@ -28,7 +28,7 @@ async def get_placement_prediction(uid: str = Depends(verify_token)):
             "cgpa": user.cgpa or 0.0,
             "skillsCount": len(user.skills or []),
             "projectCount": len(user.projects or []),
-            "resumeScore": (resume.ats_score or {}).get("overall", 0) if resume else 0,
+            "resumeScore": resume.ats_score or 0,
             "aptitudeScore": (latest_aptitude.score / max(latest_aptitude.total, 1)) * 100 if latest_aptitude else 0,
             "interviewScore": interviews[0].overall_score if interviews else 0,
         }

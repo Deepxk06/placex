@@ -3,7 +3,8 @@ from typing import List, Optional
 
 
 async def match_resume_to_jd(resume_data: dict, jd_text: str) -> JDMatchResult:
-    resume_skills = set(s.lower() for s in resume_data.get("skills", []))
+    resume_skills = extract_resume_skills(resume_data)
+    resume_skills_lower = set(s.lower() for s in resume_skills)
     jd_text_lower = jd_text.lower()
     
     # Try using sentence-transformers if available
@@ -12,9 +13,9 @@ async def match_resume_to_jd(resume_data: dict, jd_text: str) -> JDMatchResult:
         model = SentenceTransformer('all-MiniLM-L6-v2')
         resume_text = " ".join([
             resume_data.get("summary", ""),
-            " ".join(resume_data.get("skills", [])),
-            " ".join(e.get("degree", "") + " " + e.get("institute", "") for e in resume_data.get("education", [])),
-            " ".join(p.get("title", "") + " " + p.get("description", "") for p in resume_data.get("projects", [])),
+            " ".join(resume_skills),
+            " ".join(e.get("degree", "") + " " + e.get("institute", "") for e in extract_resume_entries(resume_data, "education")),
+            " ".join(p.get("title", "") + " " + p.get("description", "") for p in extract_resume_entries(resume_data, "projects")),
         ])
         emb1 = model.encode(resume_text, convert_to_tensor=True)
         emb2 = model.encode(jd_text, convert_to_tensor=True)
@@ -27,8 +28,8 @@ async def match_resume_to_jd(resume_data: dict, jd_text: str) -> JDMatchResult:
     jd_skills = extract_skills_from_jd(jd_text_lower)
     
     # Match skills
-    matching_skills = list(resume_skills & jd_skills)
-    missing_skills = list(jd_skills - resume_skills)
+    matching_skills = list(resume_skills_lower & jd_skills)
+    missing_skills = list(jd_skills - resume_skills_lower)
     
     skill_match_ratio = len(matching_skills) / max(len(jd_skills), 1)
     skill_score = round(skill_match_ratio * 100, 2)
@@ -51,6 +52,26 @@ async def match_resume_to_jd(resume_data: dict, jd_text: str) -> JDMatchResult:
         missingSkills=missing_skills,
         suggestions=suggestions,
     )
+
+
+def extract_resume_skills(resume_data: dict) -> list:
+    if isinstance(resume_data.get("skills"), list):
+        return resume_data["skills"]
+    return extract_resume_entries(resume_data, "skills", key="items")
+
+
+def extract_resume_entries(resume_data: dict, section_name: str, key: str = "entries") -> list:
+    if isinstance(resume_data.get(section_name), list):
+        return resume_data[section_name]
+    sections = resume_data.get("sections", [])
+    if isinstance(sections, list):
+        for s in sections:
+            if s.get("name") == section_name:
+                data = s.get("data", {})
+                items = data.get(key, []) if isinstance(data, dict) else []
+                if isinstance(items, list):
+                    return items
+    return []
 
 
 def extract_skills_from_jd(jd_text: str) -> set:

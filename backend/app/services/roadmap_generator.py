@@ -1,10 +1,20 @@
 from typing import List, Optional
 
 
-async def generate_roadmap(user: dict, skill_gap: dict) -> dict:
-    target_role = user.get("targetRole", "Software Engineer")
-    current_skills = user.get("skills", [])
-    missing_skills = skill_gap.get("missingSkills", []) if isinstance(skill_gap, dict) else []
+async def generate_roadmap(user, skill_gap) -> dict:
+    if isinstance(user, dict):
+        target_role = user.get("targetRole", "Software Engineer")
+        current_skills = user.get("skills", [])
+    else:
+        target_role = getattr(user, "target_role", None) or "Software Engineer"
+        current_skills = getattr(user, "skills", None) or []
+    missing_skills = []
+    if isinstance(skill_gap, dict):
+        missing_skills = skill_gap.get("missingSkills", [])
+    elif skill_gap is not None:
+        missing_skills = getattr(skill_gap, "missingSkills", None) or []
+    if not isinstance(missing_skills, list):
+        missing_skills = []
     
     roadmap = {
         "targetRole": target_role,

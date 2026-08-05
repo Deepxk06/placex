@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from app.database import get_db
 from app.auth import verify_token
 from app.models import User, Resume, Assessment, Interview, Prediction
@@ -8,12 +8,17 @@ import uuid
 router = APIRouter()
 
 
+async def require_admin(session, uid: str):
+    user = await session.get(User, uid)
+    if not user or user.role != "admin":
+        raise HTTPException(403, "Unauthorized. Admin access required.")
+    return user
+
+
 @router.get("/analytics")
 async def get_admin_analytics(uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        user = await session.get(User, uid)
-        if not user or user.role != "admin":
-            return {"error": "Unauthorized. Admin access required."}
+        await require_admin(session, uid)
         total_students = (await session.execute(select(func.count()).select_from(User).where(User.role == "student"))).scalar()
         total_resumes = (await session.execute(select(func.count()).select_from(Resume))).scalar()
         total_assessments = (await session.execute(select(func.count()).select_from(Assessment))).scalar()
@@ -44,9 +49,7 @@ async def get_admin_analytics(uid: str = Depends(verify_token)):
 @router.get("/placement-stats")
 async def get_placement_stats(uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        user = await session.get(User, uid)
-        if not user or user.role != "admin":
-            return {"error": "Unauthorized"}
+        await require_admin(session, uid)
         predictions = (await session.execute(select(Prediction).limit(500))).scalars().all()
         high = sum(1 for p in predictions if (p.placement_probability or 0) >= 0.7)
         medium = sum(1 for p in predictions if 0.4 <= (p.placement_probability or 0) < 0.7)
@@ -65,9 +68,7 @@ async def get_placement_stats(uid: str = Depends(verify_token)):
 @router.get("/department-reports")
 async def get_department_reports(uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        user = await session.get(User, uid)
-        if not user or user.role != "admin":
-            return {"error": "Unauthorized"}
+        await require_admin(session, uid)
         students = (await session.execute(select(User).where(User.role == "student").limit(1000))).scalars().all()
         departments = {}
         for s in students:
@@ -100,8 +101,6 @@ async def get_department_reports(uid: str = Depends(verify_token)):
 async def trigger_job_scrape(uid: str = Depends(verify_token)):
     from app.tasks.scrape_jobs import scrape_all_jobs
     async with get_db()() as session:
-        user = await session.get(User, uid)
-        if not user or user.role != "admin":
-            return {"error": "Unauthorized"}
-    task = scrape_all_jobs.delay()
-    return {"message": "Job scraping started", "taskId": str(task)}
+        await require_admin(session, uid)
+    message = await scrape_all_jobs()
+    return {"message": message}

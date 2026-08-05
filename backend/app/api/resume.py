@@ -39,7 +39,7 @@ async def get_ats_score(resume_id: str, uid: str = Depends(verify_token)):
         if not resume:
             raise HTTPException(404, "Resume not found")
         ats_result = await calculate_ats_score(resume.parsed_data or {})
-        resume.ats_score = ats_result.overall
+        resume.ats_score = ats_result["overall"]
         await session.commit()
     return ats_result
 

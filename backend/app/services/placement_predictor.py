@@ -1,5 +1,3 @@
-import joblib
-import numpy as np
 import os
 
 MODEL_PATH = "ai/models/placement_model.pkl"
@@ -7,6 +5,9 @@ SCALER_PATH = "ai/models/scaler.pkl"
 
 
 async def predict_placement(features: dict) -> dict:
+    import joblib
+    import numpy as np
+
     model = None
     scaler = None
 
@@ -75,6 +76,7 @@ def fallback_predict(features: dict) -> dict:
 
 
 def predict_salary(model, X_scaled, scaler, features):
+    import joblib
     try:
         if hasattr(model, 'estimators_'):
             salary_model = joblib.load("ai/models/salary_model.pkl")

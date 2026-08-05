@@ -7,18 +7,31 @@ from sqlalchemy import select
 router = APIRouter()
 
 
+def serialize_company(co) -> dict:
+    return {
+        "id": co.id,
+        "companyName": co.company_name,
+        "industry": co.industry,
+        "logo": co.logo,
+        "website": co.website,
+        "salaries": co.salaries or [],
+        "interviewExperiences": co.interview_experiences or [],
+        "requiredSkills": co.required_skills or [],
+        "faqs": co.faqs or [],
+    }
+
+
 @router.get("/insights/{company_name}")
 async def get_company_insights(company_name: str, uid: str = Depends(verify_token)):
     async with get_db()() as session:
         stmt = select(Company).where(Company.company_name.ilike(f"%{company_name}%"))
-        result = await session.execute(stmt)
-        company = result.scalar_one_or_none()
+        company = (await session.execute(stmt)).scalar_one_or_none()
         if not company:
-            companies = (await session.execute(stmt.limit(10))).scalars().all()
+            companies = (await session.execute(select(Company).limit(10))).scalars().all()
             if companies:
-                return [{c.name: getattr(co, c.name) for c in Company.__table__.columns} for co in companies]
+                return [serialize_company(c) for c in companies]
             raise HTTPException(404, "Company not found")
-        return {c.name: getattr(company, c.name) for c in Company.__table__.columns}
+        return serialize_company(company)
 
 
 @router.get("/salaries/{company_name}")

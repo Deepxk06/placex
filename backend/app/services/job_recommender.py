@@ -58,9 +58,10 @@ async def recommend_scraped_jobs(user) -> list:
             "id": job.id, "title": job.title, "company": job.company,
             "location": job.location, "description": job.description,
             "applyUrl": job.apply_url, "source": job.source,
-            "salaryText": job.salary_text, "salaryMin": job.salary_min,
-            "salaryMax": job.salary_max, "skills": job.skills,
-            "role": job.role, "jobType": job.job_type,
+            "salaryText": job.salary_text,
+            "salaryRange": {"min": job.salary_min, "max": job.salary_max},
+            "requiredSkills": job.skills, "type": job.job_type,
+            "role": job.role,
             "postedDate": job.posted_date.isoformat() if job.posted_date else None,
             "matchScore": round(score, 2),
         }))
