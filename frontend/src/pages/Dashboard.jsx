@@ -27,7 +27,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Welcome back, {user?.profile?.name || user?.email?.split('@')[0]}!</h1>
           <p className="text-gray-500">Your placement journey at a glance</p>

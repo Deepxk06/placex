@@ -2,9 +2,8 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/authStore'
 import {
   LayoutDashboard, FileText, Code2, Mic, TrendingUp, Briefcase,
-  Map, MessageCircle, Building2, Users, Shield, LogOut, Menu, X,
+  Map, MessageCircle, Building2, Users, LogOut, Menu, X,
 } from 'lucide-react'
-import { useState } from 'react'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,15 +19,15 @@ const navItems = [
   { path: '/alumni', label: 'Alumni Network', icon: Users },
 ]
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, onToggle, onNavigate }) {
   const location = useLocation()
   const { user, logout } = useAuth()
 
   return (
-    <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-white border-r border-gray-200 transition-all duration-200 flex flex-col`}>
+    <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-white border-r border-gray-200 transition-all duration-200 flex flex-col h-full`}>
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         {!collapsed && <span className="text-xl font-bold text-primary-600">PlaceX</span>}
-        <button onClick={onToggle} className="p-1 rounded hover:bg-gray-100">
+        <button onClick={onToggle} className="p-1 rounded hover:bg-gray-100" aria-label="Toggle menu">
           {collapsed ? <Menu size={20} /> : <X size={20} />}
         </button>
       </div>
@@ -40,6 +39,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             <Link
               key={item.path}
               to={item.path}
+              onClick={onNavigate}
               className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                 active ? 'bg-primary-50 text-primary-700 font-medium' : 'text-gray-600 hover:bg-gray-50'
               }`}
@@ -55,7 +55,7 @@ export default function Sidebar({ collapsed, onToggle }) {
           <div className="text-xs text-gray-500 mb-2 truncate">{user.email}</div>
         )}
         <button
-          onClick={logout}
+          onClick={() => { logout(); onNavigate && onNavigate() }}
           className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
         >
           <LogOut size={16} />

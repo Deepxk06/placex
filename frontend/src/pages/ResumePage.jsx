@@ -54,7 +54,7 @@ export default function ResumePage() {
 
   return (
     <div className="space-y-6 max-w-4xl">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Resume Analysis</h1>
           <p className="text-gray-500">Upload your resume for ATS scoring and JD matching</p>

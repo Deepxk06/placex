@@ -39,7 +39,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         <button onClick={triggerScrape} className="btn-secondary flex items-center gap-2">
           <RefreshCw size={16} /> Scrape Jobs Now
@@ -112,7 +112,7 @@ export default function AdminDashboard() {
           <h2 className="font-semibold mb-4">Branch-wise Stats</h2>
           <div className="space-y-3">
             {analytics?.branchWiseStats?.map((b, i) => (
-              <div key={i} className="flex items-center justify-between text-sm py-1 border-b border-gray-100">
+              <div key={i} className="flex flex-wrap items-center justify-between gap-3 text-sm py-1 border-b border-gray-100">
                 <span className="font-medium">{b.branch}</span>
                 <span className="text-gray-500">{b.count} students</span>
               </div>

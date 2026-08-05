@@ -168,7 +168,7 @@ export default function ResumeBuilder() {
   if (!currentId) {
     return (
       <div className="space-y-6 max-w-6xl mx-auto">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold">ATS-Friendly Resume Builder</h1>
             <p className="text-gray-500">Build, optimize, and export ATS-compliant resumes</p>
@@ -220,7 +220,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="space-y-4 max-w-7xl mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <button onClick={() => setCurrentId(null)} className="text-gray-400 hover:text-gray-600 text-sm">← Back</button>
           <div>

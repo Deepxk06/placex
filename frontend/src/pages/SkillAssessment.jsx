@@ -84,7 +84,7 @@ export default function SkillAssessment() {
             {problems.map((p) => (
               <div key={p._id} className={`card cursor-pointer transition-colors ${selectedProblem?._id === p._id ? 'border-primary-500' : ''}`}
                 onClick={() => { setSelectedProblem(p); setResult(null); setCode('') }}>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-3">
                   <span className="font-medium">{p.title}</span>
                   <span className={`badge ${
                     p.difficulty === 'easy' ? 'badge-success' : p.difficulty === 'medium' ? 'badge-warning' : 'badge-danger'
@@ -184,7 +184,7 @@ export default function SkillAssessment() {
             <>
               {mcqQuestions.map((q, i) => (
                 <div key={q._id} className="card">
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
                     <span className="text-xs font-medium text-gray-400">{i + 1}. {q.topic}</span>
                     <span className={`badge ${q.difficulty === 'easy' ? 'badge-success' : q.difficulty === 'medium' ? 'badge-warning' : 'badge-danger'}`}>{q.difficulty}</span>
                   </div>
