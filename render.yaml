@@ -26,7 +26,6 @@ services:
     name: placex-frontend
     runtime: static
     rootDir: frontend
-    plan: free
     autoDeploy: true
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
@@ -38,7 +37,6 @@ services:
     name: placex-dashboard
     runtime: static
     rootDir: neoplace-dashboard
-    plan: free
     autoDeploy: true
     buildCommand: npm ci && npm run build
     staticPublishPath: ./dist
