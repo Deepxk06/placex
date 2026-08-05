@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import {
   Pencil, Camera, Trash2, BadgeCheck, Clock, User, Phone, MapPin,
-  GraduationCap, Activity, Loader2, Camera as CameraIcon,
+  GraduationCap, Activity, Loader2, Camera as CameraIcon, RefreshCw, AlertTriangle,
 } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../components/ui/ToastProvider'
@@ -75,12 +75,15 @@ export default function ProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
   const photoDropRef = useRef(null)
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
+    setLoading(true)
     api.get('/profile')
       .then((res) => setProfile(res.data))
-      .catch(() => toast({ type: 'error', message: 'Failed to load profile' }))
+      .catch(() => toast({ type: 'error', message: 'Failed to load profile. Try again.' }))
       .finally(() => setLoading(false))
   }, [toast])
+
+  useEffect(() => { loadProfile() }, [loadProfile])
 
   const onPhoto = useCallback(async (file) => {
     if (!file) return
@@ -123,6 +126,26 @@ export default function ProfilePage() {
   })
 
   if (loading) return <ProfileSkeleton />
+
+  if (!profile) {
+    return (
+      <div className="max-w-4xl">
+        <h1 className="text-2xl font-bold dark:text-white mb-4">Profile</h1>
+        <div className="card dark:bg-gray-900 dark:border-gray-800 flex flex-col items-center gap-4 py-14 text-center">
+          <div className="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600">
+            <AlertTriangle size={26} />
+          </div>
+          <div>
+            <p className="font-medium text-gray-800 dark:text-white">Couldn't load your profile</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">The server may still be waking up. Please try again.</p>
+          </div>
+          <button onClick={loadProfile} className="btn-primary flex items-center gap-2">
+            <RefreshCw size={16} /> Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const name = profile.user?.name || ''
   const email = profile.user?.email || ''
