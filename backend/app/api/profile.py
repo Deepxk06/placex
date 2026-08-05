@@ -69,7 +69,6 @@ def serialize_profile(profile: UserProfile, user: User = None) -> dict:
         "contact": {c: getattr(profile, c) for c in SECTION_COLUMNS["contact"]},
         "address": {c: getattr(profile, c) for c in SECTION_COLUMNS["address"]},
         "college": {c: getattr(profile, c) for c in SECTION_COLUMNS["college"]},
-        "medical": {c: getattr(profile, c) for c in SECTION_COLUMNS["medical"]},
         "settings": {c: getattr(profile, c) for c in SECTION_COLUMNS["settings"]},
         "photo": profile.photo or "",
         "documents": {

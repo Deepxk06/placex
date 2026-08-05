@@ -27,8 +27,6 @@ CREATE TABLE IF NOT EXISTS user_profiles (
     college_name VARCHAR, college_location VARCHAR, degree VARCHAR, branch VARCHAR,
     cgpa VARCHAR, start_year VARCHAR, end_year VARCHAR, roll_number VARCHAR,
     admission_number VARCHAR,
-    medical_conditions TEXT, allergies TEXT, disabilities TEXT, chronic_medications TEXT,
-    emergency_contact_name VARCHAR, emergency_contact_phone VARCHAR, emergency_contact_relation VARCHAR,
     student_id_doc JSON, aadhaar_doc JSON, driving_license_doc JSON,
     language VARCHAR, theme VARCHAR,
     email_notifications BOOLEAN, sms_notifications BOOLEAN, push_notifications BOOLEAN,
