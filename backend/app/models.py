@@ -20,8 +20,6 @@ PROFILE_COMPLETION_FIELDS = [
     "pin_code", "landmark", "address_type", "latitude", "longitude",
     "college_name", "college_location", "degree", "branch", "cgpa",
     "start_year", "end_year", "roll_number", "admission_number",
-    "medical_conditions", "allergies", "disabilities", "chronic_medications",
-    "emergency_contact_name", "emergency_contact_phone", "emergency_contact_relation",
 ]
 
 
@@ -103,15 +101,6 @@ class UserProfile(Base):
     end_year = Column(String, default="")
     roll_number = Column(String, default="")
     admission_number = Column(String, default="")
-
-    # Medical
-    medical_conditions = Column(Text, default="")
-    allergies = Column(Text, default="")
-    disabilities = Column(Text, default="")
-    chronic_medications = Column(Text, default="")
-    emergency_contact_name = Column(String, default="")
-    emergency_contact_phone = Column(String, default="")
-    emergency_contact_relation = Column(String, default="")
 
     # Identity documents (JSON: {name, size, type, dataUrl})
     student_id_doc = Column(JSON, default=dict)

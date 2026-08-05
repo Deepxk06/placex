@@ -3,7 +3,7 @@ import { useDropzone } from 'react-dropzone'
 import { motion } from 'framer-motion'
 import {
   Pencil, Camera, Trash2, BadgeCheck, Clock, User, Phone, MapPin,
-  GraduationCap, HeartPulse, Activity, Loader2, Camera as CameraIcon,
+  GraduationCap, Activity, Loader2, Camera as CameraIcon,
 } from 'lucide-react'
 import api from '../services/api'
 import { useToast } from '../components/ui/ToastProvider'
@@ -57,13 +57,6 @@ const SECTION_CARDS = [
     ['cgpa', 'CGPA', 'text'], ['start_year', 'Start Year', 'text'],
     ['end_year', 'End Year', 'text'], ['roll_number', 'Roll Number', 'text'],
     ['admission_number', 'Admission Number', 'text'],
-  ]},
-  { id: 'medical', title: 'Medical Information', icon: HeartPulse, fields: [
-    ['medical_conditions', 'Medical Conditions', 'long'], ['allergies', 'Allergies', 'long'],
-    ['disabilities', 'Disabilities', 'long'], ['chronic_medications', 'Chronic Medications', 'long'],
-    ['emergency_contact_name', 'Emergency Contact', 'text'],
-    ['emergency_contact_phone', 'Emergency Phone', 'text'],
-    ['emergency_contact_relation', 'Relation', 'text'],
   ]},
 ]
 

@@ -118,25 +118,6 @@ class CollegeIn(BaseModel):
         return v
 
 
-class MedicalIn(BaseModel):
-    medical_conditions: Optional[str] = None
-    allergies: Optional[str] = None
-    disabilities: Optional[str] = None
-    chronic_medications: Optional[str] = None
-    emergency_contact_name: Optional[str] = None
-    emergency_contact_phone: Optional[str] = None
-    emergency_contact_relation: Optional[str] = None
-
-    @field_validator("emergency_contact_phone")
-    @classmethod
-    def valid_emergency_phone(cls, v):
-        if v is None or v == "":
-            return v
-        if not __import__("re").match(PHONE_RE, v):
-            raise ValueError("Emergency contact phone must be 8-15 digits")
-        return v
-
-
 class SettingsIn(BaseModel):
     language: Optional[str] = None
     theme: Optional[str] = None
@@ -152,5 +133,4 @@ class ProfileUpdate(BaseModel):
     contact: Optional[ContactIn] = None
     address: Optional[AddressIn] = None
     college: Optional[CollegeIn] = None
-    medical: Optional[MedicalIn] = None
     settings: Optional[SettingsIn] = None

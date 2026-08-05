@@ -40,10 +40,6 @@ SECTION_COLUMNS = {
         "college_name", "college_location", "degree", "branch", "cgpa",
         "start_year", "end_year", "roll_number", "admission_number",
     ],
-    "medical": [
-        "medical_conditions", "allergies", "disabilities", "chronic_medications",
-        "emergency_contact_name", "emergency_contact_phone", "emergency_contact_relation",
-    ],
     "settings": [
         "language", "theme", "email_notifications", "sms_notifications",
         "push_notifications", "profile_visibility", "two_factor_enabled",

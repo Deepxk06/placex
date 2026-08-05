@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Save, Loader2, CheckCircle2, User, Phone, MapPin, GraduationCap, HeartPulse } from 'lucide-react'
+import { X, Save, Loader2, CheckCircle2, User, Phone, MapPin, GraduationCap } from 'lucide-react'
 import api from '../../services/api'
 import { useToast } from '../ui/ToastProvider'
 import { cn } from '../../utils/helpers'
@@ -10,7 +10,6 @@ const TABS = [
   { id: 'contact', label: 'Contact', icon: Phone },
   { id: 'address', label: 'Address', icon: MapPin },
   { id: 'college', label: 'College', icon: GraduationCap },
-  { id: 'medical', label: 'Medical', icon: HeartPulse },
 ]
 
 const FIELDS = {
@@ -52,15 +51,6 @@ const FIELDS = {
     { key: 'roll_number', label: 'Roll Number' },
     { key: 'admission_number', label: 'Admission Number' },
   ],
-  medical: [
-    { key: 'medical_conditions', label: 'Medical Conditions', type: 'textarea', rows: 2 },
-    { key: 'allergies', label: 'Allergies', type: 'textarea', rows: 2 },
-    { key: 'disabilities', label: 'Disabilities', type: 'textarea', rows: 2 },
-    { key: 'chronic_medications', label: 'Chronic Medications', type: 'textarea', rows: 2 },
-    { key: 'emergency_contact_name', label: 'Emergency Contact Name' },
-    { key: 'emergency_contact_phone', label: 'Emergency Contact Phone', validate: (v) => !v || /^[0-9+\-\s()]{8,15}$/.test(v) || 'Enter 8-15 digits' },
-    { key: 'emergency_contact_relation', label: 'Emergency Contact Relation', placeholder: 'Father / Mother / Guardian' },
-  ],
 }
 
 export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
@@ -80,7 +70,6 @@ export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
         contact: { ...profile.contact },
         address: { ...profile.address },
         college: { ...profile.college },
-        medical: { ...profile.medical },
       })
       setDirty(false)
       setErrors({})
@@ -99,7 +88,7 @@ export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
     if (!open || !dirty) return
     const t = setTimeout(() => {
       setSaveStatus('saving')
-      api.put('/profile', { personal: draft.personal, contact: draft.contact, address: draft.address, college: draft.college, medical: draft.medical })
+      api.put('/profile', { personal: draft.personal, contact: draft.contact, address: draft.address, college: draft.college })
         .then((res) => {
           setSaveStatus('saved')
           setDirty(false)
@@ -152,7 +141,7 @@ export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
     try {
       const res = await api.put('/profile', {
         personal: draft.personal, contact: draft.contact, address: draft.address,
-        college: draft.college, medical: draft.medical,
+        college: draft.college,
       })
       if (onSaved) onSaved(res.data)
       setDirty(false)
