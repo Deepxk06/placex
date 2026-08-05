@@ -2,12 +2,11 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/authStore'
 import {
   LayoutDashboard, FileText, Code2, Mic, TrendingUp, Briefcase,
-  Map, MessageCircle, Building2, Users, LogOut, Menu, X, UserRound,
+  Map, MessageCircle, Building2, Users, LogOut, Menu, X,
 } from 'lucide-react'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/profile', label: 'Profile', icon: UserRound },
   { path: '/resume', label: 'Resume', icon: FileText },
   { path: '/resume-builder', label: 'Resume Builder', icon: FileText },
   { path: '/skill-assessment', label: 'Skill Assessment', icon: Code2 },
@@ -25,10 +24,9 @@ export default function Sidebar({ collapsed, onToggle, onNavigate }) {
   const { user, logout } = useAuth()
 
   return (
-    <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-white border-r border-gray-200 transition-all duration-200 flex flex-col h-full`}>
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-        {!collapsed && <span className="text-xl font-bold text-primary-600">PlaceX</span>}
-        <button onClick={onToggle} className="p-1 rounded hover:bg-gray-100" aria-label="Toggle menu">
+    <aside className={`${collapsed ? 'w-16' : 'w-60'} bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transition-all duration-200 flex flex-col h-full`}>
+      <div className="p-3 flex items-center justify-end">
+        <button onClick={onToggle} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Toggle menu">
           {collapsed ? <Menu size={20} /> : <X size={20} />}
         </button>
       </div>
