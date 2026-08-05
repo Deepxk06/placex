@@ -26,7 +26,7 @@ export default function JobRecommendations() {
   return (
     <div className="space-y-6 max-w-5xl">
       <h1 className="text-2xl font-bold">Job Recommendations</h1>
-      <div className="flex gap-2 border-b border-gray-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2">
         <button onClick={() => setTab('recommended')} className={`px-4 py-2 rounded-lg text-sm font-medium ${tab === 'recommended' ? 'bg-primary-50 text-primary-700' : 'text-gray-500'}`}>
           Recommended Jobs
         </button>
@@ -38,15 +38,15 @@ export default function JobRecommendations() {
         </button>
       </div>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-3 text-gray-400" />
           <input className="input-field pl-9" placeholder="Search jobs..." value={search.query}
             onChange={(e) => setSearch({...search, query: e.target.value})} />
         </div>
-        <input className="input-field w-48" placeholder="Location" value={search.location}
+        <input className="input-field w-full sm:w-48" placeholder="Location" value={search.location}
           onChange={(e) => setSearch({...search, location: e.target.value})} />
-        <select className="input-field w-36" value={search.type} onChange={(e) => setSearch({...search, type: e.target.value})}>
+        <select className="input-field w-full sm:w-36" value={search.type} onChange={(e) => setSearch({...search, type: e.target.value})}>
           <option value="">All Types</option>
           <option value="fulltime">Full Time</option>
           <option value="internship">Internship</option>
@@ -65,22 +65,22 @@ export default function JobRecommendations() {
             return true
           }).map((job) => (
             <div key={job.id ?? job._id} className="card hover:border-primary-200 transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start gap-3">
-                  <div className="bg-gray-100 p-2 rounded-lg">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0">
+                  <div className="bg-gray-100 p-2 rounded-lg shrink-0">
                     <Building2 size={20} className="text-gray-600" />
                   </div>
-                  <div>
-                    <h3 className="font-semibold">{job.title}</h3>
+                  <div className="min-w-0">
+                    <h3 className="font-semibold break-words">{job.title}</h3>
                     <p className="text-sm text-gray-600">{job.company}</p>
-                    <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                    <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
                       <span className="flex items-center gap-1"><MapPin size={12} /> {job.location}</span>
                       <span className="flex items-center gap-1"><Briefcase size={12} /> {job.type}</span>
                       {job.salaryRange && <span>{formatSalary(job.salaryRange?.min, job.salaryRange?.max)}</span>}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   {job.matchScore !== undefined && (
                     <span className={`badge ${job.matchScore >= 50 ? 'badge-success' : 'badge-warning'}`}>
                       {Math.round(job.matchScore)}% match

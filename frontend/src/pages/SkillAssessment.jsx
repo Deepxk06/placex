@@ -61,7 +61,7 @@ export default function SkillAssessment() {
   return (
     <div className="space-y-6 max-w-5xl">
       <h1 className="text-2xl font-bold">Skill Assessment</h1>
-      <div className="flex gap-2 border-b border-gray-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2">
         {[
           { id: 'coding', label: 'Coding', icon: Code2 },
           { id: 'aptitude', label: 'Aptitude', icon: Brain },

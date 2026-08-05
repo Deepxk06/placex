@@ -47,17 +47,17 @@ export default function AlumniNetwork() {
       <div className="space-y-3">
         {filtered.map((item) => (
           <div key={item.alumni._id} className="card">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-3">
-                <div className="bg-primary-100 p-3 rounded-full">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-start gap-3 min-w-0">
+                <div className="bg-primary-100 p-3 rounded-full shrink-0">
                   <Users size={24} className="text-primary-600" />
                 </div>
-                <div>
-                  <h3 className="font-semibold">{item.alumni.name}</h3>
-                  <p className="text-sm text-gray-600">
+                <div className="min-w-0">
+                  <h3 className="font-semibold break-words">{item.alumni.name}</h3>
+                  <p className="text-sm text-gray-600 break-words">
                     {item.alumni.currentRole} @ {item.alumni.currentCompany}
                   </p>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                  <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
                     <span>{item.alumni.branch}</span>
                     <span>Batch of {item.alumni.gradYear}</span>
                     {item.alumni.mentorshipAvailable && (
@@ -68,7 +68,7 @@ export default function AlumniNetwork() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 shrink-0">
                 <div className="text-center">
                   <div className={`text-lg font-bold ${
                     item.matchScore >= 70 ? 'text-green-600' : item.matchScore >= 40 ? 'text-yellow-600' : 'text-gray-400'

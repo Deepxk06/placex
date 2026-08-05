@@ -189,7 +189,7 @@ export default function ResumeBuilder() {
                   <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
                     <FileText size={20} className="text-primary-600" />
                   </div>
-                  <button onClick={(e) => { e.stopPropagation(); deleteResume(r.id) }} className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button onClick={(e) => { e.stopPropagation(); deleteResume(r.id) }} className="text-gray-400 hover:text-red-500 transition-colors" aria-label="Delete resume">
                     <Trash2 size={16} />
                   </button>
                 </div>
@@ -231,7 +231,7 @@ export default function ResumeBuilder() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button onClick={generateAISummary} disabled={generatingSummary} className="btn-secondary text-sm flex items-center gap-1">
             <Sparkles size={14} /> {generatingSummary ? 'Generating...' : 'AI Summary'}
           </button>
@@ -253,25 +253,27 @@ export default function ResumeBuilder() {
           <ResumePreview sections={sections} />
         </div>
       ) : (
-        <div className="flex gap-4">
-          <div className="w-56 shrink-0 space-y-1">
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="w-full lg:w-56 lg:shrink-0 space-y-1">
             <input className="input-field text-xs mb-2" placeholder="Search sections..." value={search} onChange={e => setSearch(e.target.value)} />
-            {SECTION_ORDER.map(name => {
-              const meta = SECTION_META[name]
-              if (search && !meta.label.toLowerCase().includes(search.toLowerCase())) return null
-              const data = getData(name)
-              const hasContent = name === 'personalInfo' ? data.fullName || data.email
-                : data.entries?.length > 0 || data.items?.length > 0
-              return (
-                <button key={name} onClick={() => setActiveSection(name)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${activeSection === name ? 'bg-primary-50 text-primary-700 font-medium' : 'hover:bg-gray-50 text-gray-600'}`}>
-                  <span>{meta.icon}</span>
-                  <span className="flex-1">{meta.label}</span>
-                  {hasContent && <Check size={12} className="text-green-500 shrink-0" />}
-                  {meta.required && <span className="text-xs text-red-300">*</span>}
-                </button>
-              )
-            })}
+            <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 -mx-1 px-1 lg:mx-0 lg:px-0">
+              {SECTION_ORDER.map(name => {
+                const meta = SECTION_META[name]
+                if (search && !meta.label.toLowerCase().includes(search.toLowerCase())) return null
+                const data = getData(name)
+                const hasContent = name === 'personalInfo' ? data.fullName || data.email
+                  : data.entries?.length > 0 || data.items?.length > 0
+                return (
+                  <button key={name} onClick={() => setActiveSection(name)}
+                    className={`whitespace-nowrap lg:whitespace-normal w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${activeSection === name ? 'bg-primary-50 text-primary-700 font-medium' : 'hover:bg-gray-50 text-gray-600'}`}>
+                    <span>{meta.icon}</span>
+                    <span className="flex-1">{meta.label}</span>
+                    {hasContent && <Check size={12} className="text-green-500 shrink-0" />}
+                    {meta.required && <span className="text-xs text-red-300">*</span>}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           <div className="flex-1 min-w-0">
@@ -288,7 +290,7 @@ export default function ResumeBuilder() {
             </div>
           </div>
 
-          <div className="w-72 shrink-0">
+          <div className="w-full lg:w-72 lg:shrink-0">
             <ATSScore score={atsScore} />
           </div>
         </div>
