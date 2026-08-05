@@ -13,6 +13,18 @@ def utcnow():
     return datetime.now(timezone.utc)
 
 
+PROFILE_COMPLETION_FIELDS = [
+    "date_of_birth", "gender", "blood_group", "aadhaar_number", "nationality", "bio",
+    "phone", "alternate_phone", "personal_email", "website",
+    "address_line1", "address_line2", "city", "district", "state", "country",
+    "pin_code", "landmark", "address_type", "latitude", "longitude",
+    "college_name", "college_location", "degree", "branch", "cgpa",
+    "start_year", "end_year", "roll_number", "admission_number",
+    "medical_conditions", "allergies", "disabilities", "chronic_medications",
+    "emergency_contact_name", "emergency_contact_phone", "emergency_contact_relation",
+]
+
+
 class User(Base):
     __tablename__ = "users"
     uid = Column(String, primary_key=True)
@@ -46,6 +58,93 @@ class User(Base):
     chat_messages = relationship("ChatHistory", back_populates="user")
     sent_requests = relationship("ConnectRequest", foreign_keys="ConnectRequest.from_user_id", back_populates="sender")
     received_requests = relationship("ConnectRequest", foreign_keys="ConnectRequest.to_user_id", back_populates="receiver")
+    profile = relationship("UserProfile", back_populates="user", uselist=False)
+
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+    user_id = Column(String, ForeignKey("users.uid"), primary_key=True)
+
+    # Personal
+    photo = Column(Text, default="")
+    date_of_birth = Column(String, default="")
+    gender = Column(String, default="")
+    blood_group = Column(String, default="")
+    aadhaar_number = Column(String, default="")
+    nationality = Column(String, default="Indian")
+    bio = Column(Text, default="")
+
+    # Contact
+    phone = Column(String, default="")
+    alternate_phone = Column(String, default="")
+    personal_email = Column(String, default="")
+    website = Column(String, default="")
+
+    # Address
+    address_line1 = Column(String, default="")
+    address_line2 = Column(String, default="")
+    city = Column(String, default="")
+    district = Column(String, default="")
+    state = Column(String, default="")
+    country = Column(String, default="India")
+    pin_code = Column(String, default="")
+    landmark = Column(String, default="")
+    address_type = Column(String, default="permanent")
+    latitude = Column(String, default="")
+    longitude = Column(String, default="")
+
+    # College
+    college_name = Column(String, default="")
+    college_location = Column(String, default="")
+    degree = Column(String, default="")
+    branch = Column(String, default="")
+    cgpa = Column(String, default="")
+    start_year = Column(String, default="")
+    end_year = Column(String, default="")
+    roll_number = Column(String, default="")
+    admission_number = Column(String, default="")
+
+    # Medical
+    medical_conditions = Column(Text, default="")
+    allergies = Column(Text, default="")
+    disabilities = Column(Text, default="")
+    chronic_medications = Column(Text, default="")
+    emergency_contact_name = Column(String, default="")
+    emergency_contact_phone = Column(String, default="")
+    emergency_contact_relation = Column(String, default="")
+
+    # Identity documents (JSON: {name, size, type, dataUrl})
+    student_id_doc = Column(JSON, default=dict)
+    aadhaar_doc = Column(JSON, default=dict)
+    driving_license_doc = Column(JSON, default=dict)
+
+    # Account settings
+    language = Column(String, default="English")
+    theme = Column(String, default="light")
+    email_notifications = Column(Boolean, default=True)
+    sms_notifications = Column(Boolean, default=True)
+    push_notifications = Column(Boolean, default=True)
+    profile_visibility = Column(String, default="public")
+    two_factor_enabled = Column(Boolean, default=False)
+
+    # Meta
+    is_verified = Column(Boolean, default=False)
+    activity = Column(JSON, default=list)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    user = relationship("User", back_populates="profile")
+
+    def completion_pct(self) -> int:
+        filled = 0
+        total = 0
+        for col in PROFILE_COMPLETION_FIELDS:
+            if col in ("nationality", "country", "address_type"):
+                continue
+            total += 1
+            if getattr(self, col):
+                filled += 1
+        return round(filled / total * 100) if total else 0
 
 
 class Job(Base):

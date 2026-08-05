@@ -6,6 +6,12 @@
   body {
     @apply text-gray-900 antialiased;
   }
+  .dark body {
+    @apply bg-gray-950 text-gray-100;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
 }
 
 @layer components {

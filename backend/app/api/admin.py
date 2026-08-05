@@ -1,8 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from app.database import get_db
 from app.auth import verify_token
-from app.models import User, Resume, Assessment, Interview, Prediction
+from app.models import User, Resume, Assessment, Interview, Prediction, UserProfile
+from app.schemas.profile import ProfileUpdate
+from app.api.profile import serialize_profile, get_or_create_profile, apply_profile_update, sync_user_fields, log_activity
 from sqlalchemy import select, func
+from datetime import datetime, timezone
 import uuid
 
 router = APIRouter()
@@ -104,3 +107,55 @@ async def trigger_job_scrape(uid: str = Depends(verify_token)):
         await require_admin(session, uid)
     message = await scrape_all_jobs()
     return {"message": message}
+
+
+@router.get("/profiles")
+async def list_student_profiles(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        await require_admin(session, uid)
+        users = (await session.execute(
+            select(User).where(User.role == "student").limit(1000)
+        )).scalars().all()
+        result = []
+        for user in users:
+            profile = await session.get(UserProfile, user.uid)
+            result.append({
+                "uid": user.uid,
+                "name": user.name,
+                "email": user.email,
+                "college": user.college or "",
+                "branch": user.branch or "",
+                "hasPhoto": bool(profile and profile.photo),
+                "isVerified": bool(profile and profile.is_verified),
+                "completionPct": profile.completion_pct() if profile else 0,
+                "lastUpdated": (profile.updated_at.isoformat() if profile and profile.updated_at else None),
+            })
+        return result
+
+
+@router.get("/profiles/{target_uid}")
+async def get_student_profile(target_uid: str, uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        await require_admin(session, uid)
+        profile = await get_or_create_profile(session, target_uid)
+        user = await session.get(User, target_uid)
+        if not user:
+            raise HTTPException(404, "Student not found")
+        return serialize_profile(profile, user)
+
+
+@router.put("/profiles/{target_uid}")
+async def update_student_profile(target_uid: str, payload: ProfileUpdate, uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        await require_admin(session, uid)
+        profile = await get_or_create_profile(session, target_uid)
+        user = await session.get(User, target_uid)
+        if not user:
+            raise HTTPException(404, "Student not found")
+        changed = apply_profile_update(profile, payload, user)
+        sync_user_fields(profile, user)
+        if changed:
+            profile.updated_at = datetime.now(timezone.utc)
+            log_activity(profile, "admin_updated", "Profile updated by admin")
+        await session.commit()
+        return serialize_profile(profile, user)

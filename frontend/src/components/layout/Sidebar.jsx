@@ -2,11 +2,12 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../../store/authStore'
 import {
   LayoutDashboard, FileText, Code2, Mic, TrendingUp, Briefcase,
-  Map, MessageCircle, Building2, Users, LogOut, Menu, X,
+  Map, MessageCircle, Building2, Users, LogOut, Menu, X, UserRound,
 } from 'lucide-react'
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/profile', label: 'Profile', icon: UserRound },
   { path: '/resume', label: 'Resume', icon: FileText },
   { path: '/resume-builder', label: 'Resume Builder', icon: FileText },
   { path: '/skill-assessment', label: 'Skill Assessment', icon: Code2 },

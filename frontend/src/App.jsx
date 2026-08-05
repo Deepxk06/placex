@@ -15,12 +15,14 @@ import CareerCounsellor from './pages/CareerCounsellor'
 import CompanyInsights from './pages/CompanyInsights'
 import AlumniNetwork from './pages/AlumniNetwork'
 import AdminDashboard from './pages/AdminDashboard'
+import ProfilePage from './pages/ProfilePage'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 
 const TITLES = {
   '/login': 'Sign In - PlaceX',
   '/register': 'Register - PlaceX',
   '/dashboard': 'Dashboard - PlaceX',
+  '/profile': 'Profile - PlaceX',
   '/resume': 'Resume Analysis - PlaceX',
   '/resume-builder': 'Resume Builder - PlaceX',
   '/skill-assessment': 'Skill Assessment - PlaceX',
@@ -52,6 +54,7 @@ export default function App() {
         <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/resume" element={<ResumePage />} />
           <Route path="/resume-builder" element={<ResumeBuilder />} />
           <Route path="/skill-assessment" element={<SkillAssessment />} />

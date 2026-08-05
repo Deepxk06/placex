@@ -15,22 +15,48 @@ from sqlalchemy import text
 settings = get_settings()
 
 
-async def ensure_schema():
-    """Verify DB connectivity and create tables only if missing.
+PROFILES_DDL = """
+CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id VARCHAR NOT NULL PRIMARY KEY,
+    photo TEXT, date_of_birth VARCHAR, gender VARCHAR, blood_group VARCHAR,
+    aadhaar_number VARCHAR, nationality VARCHAR, bio TEXT,
+    phone VARCHAR, alternate_phone VARCHAR, personal_email VARCHAR, website VARCHAR,
+    address_line1 VARCHAR, address_line2 VARCHAR, city VARCHAR, district VARCHAR,
+    state VARCHAR, country VARCHAR, pin_code VARCHAR, landmark VARCHAR,
+    address_type VARCHAR, latitude VARCHAR, longitude VARCHAR,
+    college_name VARCHAR, college_location VARCHAR, degree VARCHAR, branch VARCHAR,
+    cgpa VARCHAR, start_year VARCHAR, end_year VARCHAR, roll_number VARCHAR,
+    admission_number VARCHAR,
+    medical_conditions TEXT, allergies TEXT, disabilities TEXT, chronic_medications TEXT,
+    emergency_contact_name VARCHAR, emergency_contact_phone VARCHAR, emergency_contact_relation VARCHAR,
+    student_id_doc JSON, aadhaar_doc JSON, driving_license_doc JSON,
+    language VARCHAR, theme VARCHAR,
+    email_notifications BOOLEAN, sms_notifications BOOLEAN, push_notifications BOOLEAN,
+    profile_visibility VARCHAR, two_factor_enabled BOOLEAN, is_verified BOOLEAN,
+    activity JSON, created_at TIMESTAMP WITH TIME ZONE, updated_at TIMESTAMP WITH TIME ZONE,
+    FOREIGN KEY(user_id) REFERENCES users (uid)
+)
+"""
 
-    Uses a single `to_regclass` check (1 round-trip) instead of running
-    create_all (which issues ~20+ metadata queries) on every startup.
-    """
+
+async def ensure_schema():
+    """Verify DB connectivity and create tables only if missing."""
     if db_mod.engine is None:
         await connect_db()
     try:
         async with db_mod.engine.connect() as conn:
-            exists = (
+            users_exists = (
                 await conn.execute(text("SELECT to_regclass('users')"))
             ).scalar()
-        if not exists:
+            profiles_exists = (
+                await conn.execute(text("SELECT to_regclass('user_profiles')"))
+            ).scalar()
+        if not users_exists:
             async with db_mod.engine.begin() as conn:
                 await conn.run_sync(Base.metadata.create_all)
+        if not profiles_exists:
+            async with db_mod.engine.begin() as conn:
+                await conn.execute(text(PROFILES_DDL))
     except Exception as e:
         print(f"Startup DB init skipped: {e}")
 
@@ -87,7 +113,7 @@ async def health():
         return {"status": "degraded", "database": "error"}
 
 
-from app.api import auth, resume, assessment, interview, prediction, jobs, roadmap, dashboard, chatbot, company, admin, alumni, resume_builder
+from app.api import auth, resume, assessment, interview, prediction, jobs, roadmap, dashboard, chatbot, company, admin, alumni, resume_builder, profile
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(resume.router, prefix="/api/resume", tags=["Resume"])
@@ -102,3 +128,4 @@ app.include_router(chatbot.router, prefix="/api/chatbot", tags=["AI Chatbot"])
 app.include_router(company.router, prefix="/api/company", tags=["Company Insights"])
 app.include_router(alumni.router, prefix="/api/alumni", tags=["Alumni Network"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin Dashboard"])
+app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
