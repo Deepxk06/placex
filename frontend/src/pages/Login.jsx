@@ -24,16 +24,6 @@ export default function Login() {
     }
   }
 
-  const quickLogin = async (testEmail) => {
-    setEmail(testEmail)
-    setPassword('test123')
-    setLoading(true)
-    try {
-      await login(testEmail, 'test123')
-      navigate('/dashboard')
-    } catch { setLoading(false) }
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-accent-50">
       <div className="card w-full max-w-md mx-4">
@@ -58,18 +48,6 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          <p className="text-xs text-gray-400 text-center mb-3">Quick Demo Login (no password needed)</p>
-          <div className="space-y-2">
-            {['student@placex.com', 'admin@placex.com', 'priya@placex.com'].map((e) => (
-              <button key={e} onClick={() => quickLogin(e)}
-                className="w-full text-left text-sm px-3 py-2 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors">
-                Login as {e}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Don't have an account? <Link to="/register" className="text-primary-600 hover:underline">Register</Link>
