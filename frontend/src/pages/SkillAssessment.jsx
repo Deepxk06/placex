@@ -1,10 +1,17 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import api from '../services/api'
 import { Code2, Brain, BookOpen, BarChart3, Target, ChevronRight } from 'lucide-react'
 import { getScoreColor } from '../utils/helpers'
 
+const TABS = ['coding', 'aptitude', 'mcq', 'skill-gap']
+
 export default function SkillAssessment() {
-  const [tab, setTab] = useState('coding')
+  const [searchParams] = useSearchParams()
+  const [tab, setTab] = useState(() => {
+    const t = searchParams.get('tab')
+    return TABS.includes(t) ? t : 'coding'
+  })
   const [problems, setProblems] = useState([])
   const [aptitudeQuestions, setAptitudeQuestions] = useState([])
   const [mcqQuestions, setMcqQuestions] = useState([])

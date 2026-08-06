@@ -9,7 +9,7 @@ import { cn } from '../../utils/helpers'
 import { dashboardMock } from '../../data/dashboardMock'
 import { Badge } from '../ui/Badge'
 
-export default function TopBar({ onMenuClick }) {
+export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth()
   const { theme, toggle } = useTheme()
   const [photo, setPhoto] = useState(localStorage.getItem('placex_photo') || '')
@@ -54,14 +54,14 @@ export default function TopBar({ onMenuClick }) {
       <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
         <button
           onClick={onMenuClick}
-          className="lg:hidden p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
+          className="md:hidden p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800"
           aria-label="Open menu"
         >
-          <MenuIcon />
+          <Menu size={20} />
         </button>
 
         {/* Logo (mobile only) */}
-        <Link to="/dashboard" className="lg:hidden flex items-center gap-2">
+        <Link to="/dashboard" className="md:hidden flex items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-600 to-sky-500 text-white">
             <LogoIcon />
           </span>
@@ -186,7 +186,7 @@ export default function TopBar({ onMenuClick }) {
                   <div className="pt-1">
                     {[
                       { label: 'My Profile', icon: UserRound, to: '/profile' },
-                      { label: 'Settings', icon: Settings, to: '/profile' },
+                      { label: 'Settings', icon: Settings, to: '/settings' },
                       { label: 'Help & Support', icon: HelpCircle, to: '/' },
                     ].map((item) => (
                       <Link
@@ -218,16 +218,6 @@ export default function TopBar({ onMenuClick }) {
       </div>
     </header>
   )
-
-  function MenuIcon() {
-    return (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="4" y1="6" x2="20" y2="6" />
-        <line x1="4" y1="12" x2="20" y2="12" />
-        <line x1="4" y1="18" x2="20" y2="18" />
-      </svg>
-    )
-  }
 
   function LogoIcon() {
     return (
