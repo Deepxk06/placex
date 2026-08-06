@@ -21,16 +21,16 @@ import SettingsCard from '../components/profile/SettingsCard'
 import ProfileEditModal from '../components/profile/ProfileEditModal'
 
 export default function ProfilePage() {
-  const { profile, loading, error, setProfile, fetchProfile } = useProfileStore()
+  const { profile, loading, error, hasFetched, setProfile, fetchProfile } = useProfileStore()
   const [editOpen, setEditOpen] = useState(false)
 
   useEffect(() => {
-    if (!profile && !loading && !error) fetchProfile()
-  }, [profile, loading, error, fetchProfile])
+    if (!profile && !loading && !error && !hasFetched) fetchProfile()
+  }, [profile, loading, error, hasFetched, fetchProfile])
 
   if (loading) return <ProfileSkeleton />
 
-  if (error || !profile) {
+  if (error) {
     return (
       <div className="max-w-3xl">
         <div className="card dark:bg-gray-900 dark:border-gray-800 flex flex-col items-center gap-4 py-14 text-center">
@@ -41,8 +41,22 @@ export default function ProfilePage() {
             <p className="font-medium text-gray-800 dark:text-white">Couldn't load your profile</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">The server may still be waking up. Please try again.</p>
           </div>
-          <button onClick={fetchProfile} className="btn-primary flex items-center gap-2">
+          <button onClick={() => fetchProfile()} className="btn-primary flex items-center gap-2">
             <RefreshCw size={16} /> Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return (
+      <div className="max-w-3xl">
+        <div className="card flex flex-col items-center gap-4 py-14 text-center">
+          <p className="font-medium text-gray-800 dark:text-white">No profile found</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Your profile is empty. Refresh to try loading it again.</p>
+          <button onClick={fetchProfile} className="btn-primary flex items-center gap-2">
+            <RefreshCw size={16} /> Refresh
           </button>
         </div>
       </div>

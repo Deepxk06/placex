@@ -67,26 +67,27 @@ function withActivity(ext, action, detail, section) {
 
 export const useProfileStore = create((set, get) => ({
   profile: null,
-  loading: true,
+  loading: false,
   error: false,
   hasResume: false,
+  hasFetched: false,
   ext: null,
 
   async fetchProfile() {
-    set({ loading: true, error: false })
+    set({ loading: true, error: false, hasFetched: false })
     try {
       const res = await api.get('/profile')
       set({ profile: res.data || null, ext: loadExt() })
-      try {
-        const resumes = await api.get('/resume')
-        set({ hasResume: Array.isArray(resumes.data) && resumes.data.length > 0 })
-      } catch {
-        set({ hasResume: false })
-      }
     } catch {
-      set({ error: true })
+      set({ error: true, profile: null })
     } finally {
-      set({ loading: false })
+      set({ loading: false, hasFetched: true })
+    }
+    try {
+      const resumes = await api.get('/resume')
+      set({ hasResume: Array.isArray(resumes.data) && resumes.data.length > 0 })
+    } catch {
+      set({ hasResume: false })
     }
   },
 

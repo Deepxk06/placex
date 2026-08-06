@@ -5,6 +5,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://placex-bff8.onren
 const api = axios.create({
   baseURL: `${API_BASE}/api`,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30000,
 })
 
 api.interceptors.request.use((config) => {
