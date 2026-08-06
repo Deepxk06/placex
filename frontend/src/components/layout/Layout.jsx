@@ -4,32 +4,36 @@ import TopBar from './TopBar'
 import { useState } from 'react'
 
 export default function Layout() {
-  const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-950">
-      <TopBar onMenuClick={() => setMobileOpen(true)} />
+    <div className="flex min-h-screen">
+      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-primary-500/10 blur-3xl" />
+        <div className="absolute top-1/3 -right-40 h-[500px] w-[500px] rounded-full bg-sky-500/10 blur-3xl" />
+      </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="hidden md:block">
-          <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <div className="hidden lg:block shrink-0">
+        <Sidebar />
+      </div>
+
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden" onClick={() => setMobileOpen(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="absolute inset-y-0 left-0">
+            <Sidebar onNavigate={() => setMobileOpen(false)} />
+          </div>
         </div>
+      )}
 
-        {mobileOpen && (
-          <div className="fixed inset-0 z-40 md:hidden" onClick={() => setMobileOpen(false)}>
-            <div className="absolute inset-0 bg-black/50" />
-            <div className="absolute inset-y-0 left-0 w-64 bg-white shadow-xl">
-              <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} onNavigate={() => setMobileOpen(false)} />
-            </div>
-          </div>
-        )}
-
-        <main className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6">
-            <Outlet />
-          </div>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <TopBar onMenuClick={() => setMobileOpen(true)} />
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 py-6 sm:py-8">
+          <Outlet />
         </main>
+        <footer className="border-t border-gray-200/70 dark:border-gray-800/70 py-4 text-center text-xs text-gray-400">
+          PlaceX — AI-Powered Placement Portal for Students
+        </footer>
       </div>
     </div>
   )

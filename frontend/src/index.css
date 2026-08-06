@@ -2,16 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --tooltip-bg: #ffffff;
+  --chart-grid: rgba(148, 163, 184, 0.25);
+}
+
+.dark {
+  --tooltip-bg: #0f172a;
+  --chart-grid: rgba(148, 163, 184, 0.18);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 @layer base {
   body {
-    @apply text-gray-900 antialiased;
-  }
-  .dark body {
-    @apply bg-gray-950 text-gray-100;
+    @apply font-sans antialiased text-gray-900 bg-gray-50 dark:text-gray-100 dark:bg-gray-950;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   html.dark {
     color-scheme: dark;
   }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-600;
+}
+
+::selection {
+  @apply bg-primary-500/30;
+}
+
+.glass {
+  @apply bg-white/80 dark:bg-gray-900/60 backdrop-blur-xl border border-gray-200/70 dark:border-gray-800/70;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-sky-500;
+}
+
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.14);
 }
 
 @layer components {
