@@ -5,7 +5,6 @@ import { dashboardMock } from '../data/dashboardMock'
 import { Code2, ClipboardList, FileUp, Mic } from 'lucide-react'
 import WelcomeHeader from '../components/dashboard/WelcomeHeader'
 import StatsGrid from '../components/dashboard/StatsGrid'
-import QuickActions from '../components/dashboard/QuickActions'
 import PlacementDrives from '../components/dashboard/PlacementDrives'
 import AIRoleRecommendations from '../components/dashboard/AIRoleRecommendations'
 import DailyGoals from '../components/dashboard/DailyGoals'
@@ -84,7 +83,6 @@ export default function Dashboard() {
     <div className="space-y-6">
       <WelcomeHeader name={name} readiness={data.readinessScore} />
       <StatsGrid statCards={data.statCards} />
-      <QuickActions />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 space-y-6">
