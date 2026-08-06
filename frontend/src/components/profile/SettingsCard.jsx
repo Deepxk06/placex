@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Settings, Moon, Sun, Bell, Globe, Eye, ShieldCheck, Loader2, Key, MonitorSmartphone, LogOut, Trash2 } from 'lucide-react'
 import api from '../../services/api'
 import { useAuth } from '../../store/authStore'
 import { useToast } from '../ui/ToastProvider'
+import { useTheme } from '../../hooks/useTheme.jsx'
 import Modal from './Modal'
 import { TextInput, Field } from './FormField'
 import { cn } from '../../utils/helpers'
@@ -17,18 +18,11 @@ const VISIBILITY = [
 export default function SettingsCard({ settings, onUpdate }) {
   const { toast } = useToast()
   const { user, logout } = useAuth()
+  const { theme, setTheme } = useTheme()
   const [saving, setSaving] = useState(false)
   const [pwOpen, setPwOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [pw, setPw] = useState({ current: '', next: '', confirm: '' })
-
-  useEffect(() => {
-    if (settings?.theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else if (settings?.theme) {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [settings?.theme])
 
   const save = async (patch) => {
     setSaving(true)
@@ -41,6 +35,11 @@ export default function SettingsCard({ settings, onUpdate }) {
     } finally {
       setSaving(false)
     }
+  }
+
+  const setDefaultTheme = (t) => {
+    setTheme(t)
+    if (settings?.theme !== t) save({ theme: t })
   }
 
   const toggle = (key) => save({ [key]: !settings[key] })
@@ -68,18 +67,18 @@ export default function SettingsCard({ settings, onUpdate }) {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          {settings?.theme === 'dark' ? <Moon size={16} className="text-gray-400 shrink-0" /> : <Sun size={16} className="text-gray-400 shrink-0" />}
+          {theme === 'dark' ? <Moon size={16} className="text-gray-400 shrink-0" /> : <Sun size={16} className="text-gray-400 shrink-0" />}
           <span className="text-sm text-gray-700 dark:text-gray-300 w-24">Theme</span>
           <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
             <button
-              onClick={() => settings?.theme !== 'light' && save({ theme: 'light' })}
-              className={cn('px-4 py-1.5 text-sm transition-colors', settings?.theme !== 'dark' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300')}
+              onClick={() => theme !== 'light' && setDefaultTheme('light')}
+              className={cn('px-4 py-1.5 text-sm transition-colors', theme !== 'dark' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300')}
             >
               Light
             </button>
             <button
-              onClick={() => settings?.theme !== 'dark' && save({ theme: 'dark' })}
-              className={cn('px-4 py-1.5 text-sm transition-colors', settings?.theme === 'dark' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300')}
+              onClick={() => theme !== 'dark' && setDefaultTheme('dark')}
+              className={cn('px-4 py-1.5 text-sm transition-colors', theme === 'dark' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300')}
             >
               Dark
             </button>

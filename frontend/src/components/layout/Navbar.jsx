@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, ChevronDown, UserRound, LogOut, Search, Bell, Sun, Moon, Settings, HelpCircle } from 'lucide-react'
+import { Menu, ChevronDown, UserRound, LogOut, Search, Bell, Settings, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../store/authStore'
 import api from '../../services/api'
-import { useTheme } from '../../hooks/useTheme'
 import { cn } from '../../utils/helpers'
 import { dashboardMock } from '../../data/dashboardMock'
 import { Badge } from '../ui/Badge'
 
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth()
-  const { theme, toggle } = useTheme()
   const [photo, setPhoto] = useState(localStorage.getItem('placex_photo') || '')
   const [profileOpen, setProfileOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -82,26 +80,6 @@ export default function Navbar({ onMenuClick }) {
         <div className="flex-1 sm:hidden" />
 
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
-          {/* Theme toggle */}
-          <button
-            onClick={toggle}
-            aria-label="Toggle dark mode"
-            className="p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={theme}
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="block"
-              >
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-              </motion.span>
-            </AnimatePresence>
-          </button>
-
           {/* Notifications */}
           <div ref={notifRef} className="relative">
             <button
