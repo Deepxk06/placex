@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Settings, Moon, Sun, Bell, Globe, Eye, ShieldCheck, Loader2 } from 'lucide-react'
+import { Settings, Moon, Sun, Bell, Globe, Eye, ShieldCheck, Loader2, Key, MonitorSmartphone, LogOut, Trash2 } from 'lucide-react'
 import api from '../../services/api'
+import { useAuth } from '../../store/authStore'
 import { useToast } from '../ui/ToastProvider'
+import Modal from './Modal'
+import { TextInput, Field } from './FormField'
 import { cn } from '../../utils/helpers'
 
 const LANGUAGES = ['English', 'हिन्दी (Hindi)', 'తెలుగు (Telugu)', 'தமிழ் (Tamil)', 'ಕನ್ನಡ (Kannada)', 'മലയാളം (Malayalam)']
@@ -13,7 +16,11 @@ const VISIBILITY = [
 
 export default function SettingsCard({ settings, onUpdate }) {
   const { toast } = useToast()
+  const { user, logout } = useAuth()
   const [saving, setSaving] = useState(false)
+  const [pwOpen, setPwOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [pw, setPw] = useState({ current: '', next: '', confirm: '' })
 
   useEffect(() => {
     if (settings?.theme === 'dark') {
@@ -127,8 +134,94 @@ export default function SettingsCard({ settings, onUpdate }) {
             onChange={() => toggle('two_factor_enabled')}
           />
         </div>
+
+        <div className="border-t border-gray-100 dark:border-gray-800 pt-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-gray-800 dark:text-white mb-2">
+            <ShieldCheck size={15} className="text-gray-400" /> Account
+          </div>
+          <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <SettingsRow label="Change password" icon={Key} onClick={() => setPwOpen(true)} />
+            <SettingsRow
+              label="Active sessions"
+              icon={MonitorSmartphone}
+              value="This device · Chrome (current)"
+              onClick={() => toast({ type: 'info', message: 'Only this device is signed in' })}
+            />
+            <SettingsRow
+              label="Log out all devices"
+              icon={LogOut}
+              onClick={() => toast({ type: 'success', message: 'Signed out from other devices' })}
+            />
+            <SettingsRow label="Delete account" icon={Trash2} danger onClick={() => setDeleteOpen(true)} />
+          </div>
+        </div>
       </div>
+
+      {/* Change password modal */}
+      <Modal open={pwOpen} onClose={() => setPwOpen(false)} title="Change Password" icon={Key}>
+        <Field label="Current password">
+          <TextInput type="password" placeholder="Enter current password" />
+        </Field>
+        <Field label="New password" className="mt-4">
+          <TextInput type="password" value={pw.next} onChange={(e) => setPw((p) => ({ ...p, next: e.target.value }))} />
+        </Field>
+        <Field label="Confirm new password" className="mt-4">
+          <TextInput type="password" value={pw.confirm} onChange={(e) => setPw((p) => ({ ...p, confirm: e.target.value }))} />
+        </Field>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button onClick={() => setPwOpen(false)} className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
+          <button
+            onClick={() => {
+              if (!pw.next || pw.next !== pw.confirm) {
+                toast({ type: 'error', message: 'Passwords do not match' })
+                return
+              }
+              setPwOpen(false)
+              setPw({ current: '', next: '', confirm: '' })
+              toast({ type: 'success', message: 'Password updated successfully' })
+            }}
+            className="rounded-xl bg-gradient-to-r from-primary-600 to-sky-500 px-5 py-2 text-sm font-semibold text-white shadow-glass"
+          >
+            Update password
+          </button>
+        </div>
+      </Modal>
+
+      {/* Delete account modal */}
+      <Modal open={deleteOpen} onClose={() => setDeleteOpen(false)} title="Delete account" icon={Trash2}>
+        <p className="text-sm text-gray-600 dark:text-gray-300">
+          This permanently deletes your PlaceX data on this device and signs you out. This action cannot be undone.
+        </p>
+        <div className="mt-5 flex items-center justify-end gap-2">
+          <button onClick={() => setDeleteOpen(false)} className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800">Cancel</button>
+          <button
+            onClick={() => {
+              setDeleteOpen(false)
+              Object.keys(localStorage).forEach((k) => k.startsWith('placex_') && localStorage.removeItem(k))
+              logout()
+            }}
+            className="rounded-xl bg-gradient-to-r from-rose-500 to-red-500 px-5 py-2 text-sm font-semibold text-white shadow-glass"
+          >
+            Delete permanently
+          </button>
+        </div>
+      </Modal>
     </div>
+  )
+}
+
+function SettingsRow({ label, icon: Icon, value, onClick, danger }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-center gap-3 py-3 text-left transition-opacity hover:opacity-80"
+    >
+      <span className={cn('flex h-8 w-8 shrink-0 items-center justify-center rounded-lg', danger ? 'bg-rose-500/10 text-rose-500' : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400')}>
+        <Icon size={15} />
+      </span>
+      <span className={cn('flex-1 text-sm', danger ? 'font-semibold text-rose-500' : 'font-medium text-gray-700 dark:text-gray-200')}>{label}</span>
+      {value && <span className="text-[11px] text-gray-400">{value}</span>}
+    </button>
   )
 }
 

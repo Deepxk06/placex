@@ -16,9 +16,6 @@ const FIELDS = {
   personal: [
     { key: 'date_of_birth', label: 'Date of Birth', type: 'date', validate: (v) => !v || /^\d{4}-\d{2}-\d{2}$/.test(v) || 'Use YYYY-MM-DD' },
     { key: 'gender', label: 'Gender', type: 'select', options: ['Male', 'Female', 'Other', 'Prefer not to say'] },
-    { key: 'blood_group', label: 'Blood Group', type: 'select', options: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] },
-    { key: 'aadhaar_number', label: 'Aadhaar Number', placeholder: '1234 5678 9012', validate: (v) => !v || /^\d{4}\s?\d{4}\s?\d{4}$/.test(v) || 'Enter 12 digits' },
-    { key: 'nationality', label: 'Nationality' },
     { key: 'bio', label: 'Bio', type: 'textarea', rows: 3 },
   ],
   contact: [
@@ -33,12 +30,7 @@ const FIELDS = {
     { key: 'city', label: 'City' },
     { key: 'district', label: 'District' },
     { key: 'state', label: 'State' },
-    { key: 'country', label: 'Country' },
     { key: 'pin_code', label: 'PIN Code', validate: (v) => !v || /^\d{6}$/.test(v) || 'Must be 6 digits' },
-    { key: 'landmark', label: 'Landmark' },
-    { key: 'address_type', label: 'Address Type', type: 'select', options: ['permanent', 'current', 'hostel', 'other'] },
-    { key: 'latitude', label: 'Latitude' },
-    { key: 'longitude', label: 'Longitude' },
   ],
   college: [
     { key: 'college_name', label: 'College Name' },
