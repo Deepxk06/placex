@@ -17,6 +17,7 @@ import AlumniNetwork from './pages/AlumniNetwork'
 import AdminDashboard from './pages/AdminDashboard'
 import ProfilePage from './pages/ProfilePage'
 import SettingsPage from './pages/SettingsPage'
+import CodePlayground from './pages/CodePlayground'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 
 const TITLES = {
@@ -28,6 +29,7 @@ const TITLES = {
   '/resume': 'Resume Analysis - PlaceX',
   '/resume-builder': 'Resume Builder - PlaceX',
   '/skill-assessment': 'Skill Assessment - PlaceX',
+  '/code-playground': 'Code Playground - PlaceX',
   '/mock-interview': 'Mock Interview - PlaceX',
   '/placement-prediction': 'Placement Prediction - PlaceX',
   '/jobs': 'Job Recommendations - PlaceX',
@@ -61,6 +63,7 @@ export default function App() {
           <Route path="/resume" element={<ResumePage />} />
           <Route path="/resume-builder" element={<ResumeBuilder />} />
           <Route path="/skill-assessment" element={<SkillAssessment />} />
+          <Route path="/code-playground" element={<CodePlayground />} />
           <Route path="/mock-interview" element={<MockInterview />} />
           <Route path="/placement-prediction" element={<PlacementPrediction />} />
           <Route path="/jobs" element={<JobRecommendations />} />

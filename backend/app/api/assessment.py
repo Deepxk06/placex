@@ -87,7 +87,14 @@ async def get_coding_problem(problem_id: str, uid: str = Depends(verify_token)):
 
 
 @router.post("/coding/submit")
-async def submit_coding(problem_id: str, language: str, code: str, uid: str = Depends(verify_token)):
+async def submit_coding(payload: dict = Body(...), uid: str = Depends(verify_token)):
+    problem_id = str(payload.get("problem_id") or "").strip()
+    language = str(payload.get("language") or "").strip()
+    code = str(payload.get("code") or "")
+    if not problem_id or not language or not code:
+        raise HTTPException(400, "problem_id, language and code are required")
+    if not problem_id.isdigit():
+        raise HTTPException(400, "Invalid problem_id")
     async with get_db()() as session:
         from app.models import CodingProblem
         problem = await session.get(CodingProblem, int(problem_id))

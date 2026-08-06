@@ -1,10 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import api from '../services/api'
-import { Code2, Brain, BookOpen, BarChart3, Target, ChevronRight } from 'lucide-react'
+import { Code2, Brain, BookOpen, BarChart3, Target, ChevronRight, Loader2 } from 'lucide-react'
 import { getScoreColor } from '../utils/helpers'
 
 const TABS = ['coding', 'aptitude', 'mcq', 'skill-gap']
+
+const VERDICT_META = {
+  accepted: { label: 'Accepted', cls: 'badge-success' },
+  wrong_answer: { label: 'Wrong Answer', cls: 'badge-danger' },
+  compile_error: { label: 'Compilation Error', cls: 'badge-danger' },
+  runtime_error: { label: 'Runtime Error', cls: 'badge-danger' },
+  time_limit_exceeded: { label: 'Time Limit Exceeded', cls: 'badge-warning' },
+}
 
 export default function SkillAssessment() {
   const [searchParams] = useSearchParams()
@@ -17,14 +25,22 @@ export default function SkillAssessment() {
   const [mcqQuestions, setMcqQuestions] = useState([])
   const [selectedProblem, setSelectedProblem] = useState(null)
   const [code, setCode] = useState('')
+  const [languages, setLanguages] = useState([{ key: 'python', label: 'Python 3' }, { key: 'javascript', label: 'JavaScript (Node.js)' }])
   const [language, setLanguage] = useState('python')
   const [result, setResult] = useState(null)
+  const [submitError, setSubmitError] = useState('')
   const [aptitudeAnswers, setAptitudeAnswers] = useState({})
   const [aptitudeResult, setAptitudeResult] = useState(null)
   const [mcqAnswers, setMcqAnswers] = useState({})
   const [mcqResult, setMcqResult] = useState(null)
   const [skillGap, setSkillGap] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    api.get('/compiler/languages').then(r => {
+      if (Array.isArray(r.data) && r.data.length) setLanguages(r.data)
+    }).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (tab === 'coding') {
@@ -41,10 +57,20 @@ export default function SkillAssessment() {
   const submitCode = async () => {
     if (!selectedProblem || !code) return
     setLoading(true)
+    setSubmitError('')
     try {
-      const res = await api.post(`/assessment/coding/submit?problem_id=${selectedProblem._id}&language=${language}&code=${encodeURIComponent(code)}`)
+      const res = await api.post('/assessment/coding/submit', {
+        problem_id: selectedProblem._id,
+        language,
+        code,
+      })
       setResult(res.data)
-    } catch {} finally { setLoading(false) }
+    } catch (e) {
+      setSubmitError(e?.response?.data?.detail || 'Failed to submit solution. Try again.')
+      setResult(null)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const submitAptitude = async () => {
@@ -117,9 +143,8 @@ export default function SkillAssessment() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                <select className="input-field w-32" value={language} onChange={e => setLanguage(e.target.value)}>
-                  <option value="python">Python</option>
-                  <option value="javascript">JavaScript</option>
+                <select className="input-field w-48" value={language} onChange={e => setLanguage(e.target.value)}>
+                  {languages.map(l => <option key={l.key} value={l.key}>{l.label}</option>)}
                 </select>
                 </div>
                 <textarea className="input-field font-mono text-sm" rows={10}
@@ -127,17 +152,41 @@ export default function SkillAssessment() {
                 <button onClick={submitCode} disabled={loading || !code} className="btn-primary">
                   {loading ? 'Running...' : 'Submit Solution'}
                 </button>
+                {submitError && (
+                  <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{submitError}</div>
+                )}
                 {result && (
                   <div className="card">
-                    <div className="flex items-center gap-3 mb-2">
-                      <span className="font-medium">Status:</span>
-                      <span className={`badge ${result.status === 'accepted' ? 'badge-success' : 'badge-danger'}`}>
-                        {result.status === 'accepted' ? 'Accepted' : 'Wrong Answer'}
-                      </span>
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
+                      {VERDICT_META[result.status] ? (
+                        <span className={`badge ${VERDICT_META[result.status].cls}`}>{VERDICT_META[result.status].label}</span>
+                      ) : (
+                        <span className="badge badge-danger">{result.status}</span>
+                      )}
+                      <span className="text-sm text-gray-600">Passed: {result.passedTestCases}/{result.totalTestCases} test cases · {result.runtime}ms</span>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      <span>Passed: {result.passedTestCases}/{result.totalTestCases} test cases</span>
-                    </div>
+                    {result.status === 'compile_error' && result.results?.some(t => t.stderr) && (
+                      <pre className="bg-gray-950 text-amber-300 rounded p-3 text-xs font-mono overflow-auto whitespace-pre-wrap mt-2">{result.results.find(t => t.stderr)?.stderr}</pre>
+                    )}
+                    {result.results?.map((tc, i) => (
+                      <div key={i} className={`mt-2 rounded-lg p-3 text-xs ${tc.passed ? 'bg-emerald-50 dark:bg-emerald-500/10' : 'bg-rose-50 dark:bg-rose-500/10'}`}>
+                        <div className="flex items-center gap-2 font-semibold">
+                          <span className={tc.passed ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
+                            {tc.passed ? '✓' : '✗'}
+                          </span>
+                          <span className="text-gray-600 dark:text-gray-300">Test {i + 1}</span>
+                          {tc.error && <span className="text-rose-500 font-normal">{tc.error}</span>}
+                        </div>
+                        <div className="mt-1 grid grid-cols-1 sm:grid-cols-3 gap-2 text-gray-600 dark:text-gray-400">
+                          <div><span className="text-gray-400">Input:</span> <pre className="font-mono inline whitespace-pre-wrap">{tc.input}</pre></div>
+                          <div><span className="text-gray-400">Expected:</span> <pre className="font-mono inline whitespace-pre-wrap">{tc.expected}</pre></div>
+                          <div><span className="text-gray-400">Got:</span> <pre className="font-mono inline whitespace-pre-wrap">{tc.got || '(no output)'}</pre></div>
+                        </div>
+                      </div>
+                    ))}
+                    {result.error && !result.results?.length && (
+                      <div className="mt-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 p-3 text-sm text-rose-600 dark:text-rose-300">{result.error}</div>
+                    )}
                   </div>
                 )}
               </>

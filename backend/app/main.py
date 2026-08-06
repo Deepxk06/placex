@@ -111,7 +111,7 @@ async def health():
         return {"status": "degraded", "database": "error"}
 
 
-from app.api import auth, resume, assessment, interview, prediction, jobs, roadmap, dashboard, chatbot, company, admin, alumni, resume_builder, profile
+from app.api import auth, resume, assessment, interview, prediction, jobs, roadmap, dashboard, chatbot, company, admin, alumni, resume_builder, profile, compiler
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(resume.router, prefix="/api/resume", tags=["Resume"])
@@ -127,3 +127,4 @@ app.include_router(company.router, prefix="/api/company", tags=["Company Insight
 app.include_router(alumni.router, prefix="/api/alumni", tags=["Alumni Network"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin Dashboard"])
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
+app.include_router(compiler.router, prefix="/api/compiler", tags=["Code Compiler"])

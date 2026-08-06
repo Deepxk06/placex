@@ -12,6 +12,7 @@ import {
   Settings,
   PanelLeftClose,
   PanelLeftOpen,
+  TerminalSquare,
 } from 'lucide-react'
 import SidebarItem from './SidebarItem'
 import SidebarFooter from './SidebarFooter'
@@ -31,6 +32,7 @@ const NAV_GROUPS = [
     group: 'Practice',
     items: [
       { label: 'Coding', to: '/skill-assessment', query: 'tab=coding', icon: Code2 },
+      { label: 'Code Playground', to: '/code-playground', icon: TerminalSquare },
       { label: 'Aptitude', to: '/skill-assessment', query: 'tab=aptitude', icon: Brain },
       { label: 'Mock Interview', to: '/mock-interview', icon: Mic },
     ],

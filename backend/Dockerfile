@@ -6,6 +6,21 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Runtimes for the PlaceX code compiler module
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        nodejs \
+        gcc g++ make \
+        default-jdk \
+        golang-go \
+        rustc cargo \
+        ruby \
+        php-cli \
+        perl \
+        lua5.3 \
+        r-base \
+        mono-devel \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements-prod.txt .
 RUN pip install --upgrade pip && pip install -r requirements-prod.txt
 
