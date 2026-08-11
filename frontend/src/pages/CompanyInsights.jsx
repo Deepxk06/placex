@@ -29,7 +29,7 @@ export default function CompanyInsights() {
       <h1 className="text-2xl font-bold">Company Insights</h1>
       <div className="relative">
         <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-        <input className="input-field pl-9" placeholder="Search company..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <input className="input-field pl-9" placeholder="Search company..." aria-label="Search companies" value={search} onChange={(e) => setSearch(e.target.value)} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

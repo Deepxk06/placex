@@ -165,7 +165,7 @@ function SlotItem({ slot, doc, uploading, onUpload, onRemove }) {
             isDragActive && 'border-primary-500 bg-primary-500/5'
           )}
         >
-          <input {...getInputProps()} />
+          <input {...getInputProps()} aria-label="Upload document" />
           {uploading ? (
             <Loader2 size={18} className="animate-spin text-primary-500" />
           ) : (

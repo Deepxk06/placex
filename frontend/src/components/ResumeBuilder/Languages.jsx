@@ -22,8 +22,8 @@ export default function Languages({ data, onChange }) {
         </div>
       ))}
       <div className="flex gap-2">
-        <input className="input-field text-sm flex-1" placeholder="Language" value={current.language} onChange={e => setCurrent(p => ({ ...p, language: e.target.value }))} />
-        <select className="input-field text-sm w-32" value={current.level} onChange={e => setCurrent(p => ({ ...p, level: e.target.value }))}>
+        <input className="input-field text-sm flex-1" placeholder="Language" aria-label="Language" value={current.language} onChange={e => setCurrent(p => ({ ...p, language: e.target.value }))} />
+        <select className="input-field text-sm w-32" aria-label="Proficiency level" value={current.level} onChange={e => setCurrent(p => ({ ...p, level: e.target.value }))}>
           {levels.map(l => <option key={l} value={l}>{l}</option>)}
         </select>
         <button onClick={add} className="btn-secondary text-sm">Add</button>

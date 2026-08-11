@@ -21,10 +21,10 @@ export default function Education({ data, onChange }) {
         </div>
       ))}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <input className="input-field text-sm" placeholder="Degree *" value={current.degree} onChange={e => setCurrent(p => ({ ...p, degree: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Institute *" value={current.institute} onChange={e => setCurrent(p => ({ ...p, institute: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Year of Graduation" value={current.year} onChange={e => setCurrent(p => ({ ...p, year: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="GPA (optional)" value={current.gpa} onChange={e => setCurrent(p => ({ ...p, gpa: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Degree *" aria-label="Degree" value={current.degree} onChange={e => setCurrent(p => ({ ...p, degree: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Institute *" aria-label="Institute" value={current.institute} onChange={e => setCurrent(p => ({ ...p, institute: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Year of Graduation" aria-label="Year of graduation" value={current.year} onChange={e => setCurrent(p => ({ ...p, year: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="GPA (optional)" aria-label="GPA" value={current.gpa} onChange={e => setCurrent(p => ({ ...p, gpa: e.target.value }))} />
       </div>
       <button onClick={add} className="btn-secondary text-sm w-full">Add Education</button>
     </div>

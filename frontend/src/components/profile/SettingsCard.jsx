@@ -58,6 +58,7 @@ export default function SettingsCard({ settings, onUpdate }) {
           <Globe size={16} className="text-gray-400 shrink-0" />
           <span className="text-sm text-gray-700 dark:text-gray-300 w-24">Language</span>
           <select
+            aria-label="Language"
             className="input-field !w-auto"
             value={settings?.language || 'English'}
             onChange={(e) => save({ language: e.target.value })}

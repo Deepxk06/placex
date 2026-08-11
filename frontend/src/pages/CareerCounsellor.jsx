@@ -87,7 +87,7 @@ export default function CareerCounsellor() {
         )}
 
         <div className="flex gap-2 border-t border-gray-100 pt-4">
-          <input className="input-field flex-1" placeholder="Ask anything about your career..."
+          <input className="input-field flex-1" placeholder="Ask anything about your career..." aria-label="Chat message"
             value={input} onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && sendMessage()} />
           <button onClick={sendMessage} disabled={!input.trim() || loading} className="btn-primary">

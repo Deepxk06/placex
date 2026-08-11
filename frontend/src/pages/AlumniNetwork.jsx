@@ -39,7 +39,7 @@ export default function AlumniNetwork() {
         </div>
         <div className="relative">
           <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-          <input className="input-field pl-9" placeholder="Search alumni..." value={search}
+          <input className="input-field pl-9" placeholder="Search alumni..." aria-label="Search alumni" value={search}
             onChange={(e) => setSearch(e.target.value)} />
         </div>
       </div>
@@ -96,7 +96,7 @@ export default function AlumniNetwork() {
 
             {!sent[item.alumni._id] ? (
               <div className="mt-3 pt-3 border-t border-gray-100">
-                <textarea className="input-field text-sm mb-2" rows={2} placeholder="Write a message..."
+                <textarea className="input-field text-sm mb-2" rows={2} aria-label="Message to alumni" placeholder="Write a message..."
                   value={connectMsg[item.alumni._id] || ''}
                   onChange={(e) => setConnectMsg({...connectMsg, [item.alumni._id]: e.target.value})} />
                 <button onClick={() => connect(item.alumni._id)} className="btn-primary text-sm flex items-center gap-1">

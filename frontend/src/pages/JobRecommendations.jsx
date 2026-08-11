@@ -41,12 +41,12 @@ export default function JobRecommendations() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
           <Search size={16} className="absolute left-3 top-3 text-gray-400" />
-          <input className="input-field pl-9" placeholder="Search jobs..." value={search.query}
+          <input className="input-field pl-9" placeholder="Search jobs..." aria-label="Search jobs" value={search.query}
             onChange={(e) => setSearch({...search, query: e.target.value})} />
         </div>
-        <input className="input-field w-full sm:w-48" placeholder="Location" value={search.location}
+        <input className="input-field w-full sm:w-48" placeholder="Location" aria-label="Job location" value={search.location}
           onChange={(e) => setSearch({...search, location: e.target.value})} />
-        <select className="input-field w-full sm:w-36" value={search.type} onChange={(e) => setSearch({...search, type: e.target.value})}>
+        <select className="input-field w-full sm:w-36" aria-label="Job type" value={search.type} onChange={(e) => setSearch({...search, type: e.target.value})}>
           <option value="">All Types</option>
           <option value="fulltime">Full Time</option>
           <option value="internship">Internship</option>

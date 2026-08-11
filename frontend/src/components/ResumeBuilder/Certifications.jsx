@@ -21,10 +21,10 @@ export default function Certifications({ data, onChange }) {
         </div>
       ))}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        <input className="input-field text-sm" placeholder="Certification Name *" value={current.name} onChange={e => setCurrent(p => ({ ...p, name: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Issuer" value={current.issuer} onChange={e => setCurrent(p => ({ ...p, issuer: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Date" value={current.date} onChange={e => setCurrent(p => ({ ...p, date: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Credential URL" value={current.link} onChange={e => setCurrent(p => ({ ...p, link: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Certification Name *" aria-label="Certification name" value={current.name} onChange={e => setCurrent(p => ({ ...p, name: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Issuer" aria-label="Issuer" value={current.issuer} onChange={e => setCurrent(p => ({ ...p, issuer: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Date" aria-label="Date" value={current.date} onChange={e => setCurrent(p => ({ ...p, date: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Credential URL" aria-label="Credential URL" value={current.link} onChange={e => setCurrent(p => ({ ...p, link: e.target.value }))} />
       </div>
       <button onClick={add} className="btn-secondary text-sm w-full">Add Certification</button>
     </div>

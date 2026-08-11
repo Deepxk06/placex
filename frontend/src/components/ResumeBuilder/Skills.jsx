@@ -28,7 +28,7 @@ export default function Skills({ data, onChange }) {
         ))}
       </div>
       <div className="flex gap-2">
-        <input className="input-field text-sm flex-1" placeholder="Type a skill and press Enter" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} />
+        <input className="input-field text-sm flex-1" placeholder="Type a skill and press Enter" aria-label="Skill" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleKeyDown} />
         <button onClick={add} className="btn-secondary text-sm">Add</button>
       </div>
       <div className="flex flex-wrap gap-1">

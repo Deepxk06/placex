@@ -224,11 +224,12 @@ export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
                     const err = errors[`${activeTab}.${field.key}`]
                     return (
                       <div key={field.key} className={cn(field.type === 'textarea' && 'sm:col-span-2')}>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label htmlFor={`field-${field.key}`} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           {field.label}
                         </label>
                         {field.type === 'textarea' ? (
                           <textarea
+                            id={`field-${field.key}`}
                             className={cn('input-field', err && 'border-red-500')}
                             rows={field.rows || 3}
                             value={value}
@@ -236,6 +237,7 @@ export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
                           />
                         ) : field.type === 'select' ? (
                           <select
+                            id={`field-${field.key}`}
                             className={cn('input-field', err && 'border-red-500')}
                             value={value}
                             onChange={(e) => setField(activeTab, field.key, e.target.value)}
@@ -245,6 +247,7 @@ export default function ProfileEditModal({ open, profile, onClose, onSaved }) {
                           </select>
                         ) : (
                           <input
+                            id={`field-${field.key}`}
                             className={cn('input-field', err && 'border-red-500')}
                             type={field.type || 'text'}
                             placeholder={field.placeholder || ''}

@@ -131,6 +131,7 @@ export default function CodePlayground() {
             </div>
             <textarea
               ref={codeRef}
+              aria-label="Code editor"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               spellCheck={false}
@@ -141,6 +142,7 @@ export default function CodePlayground() {
           <div className="card">
             <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Standard Input (stdin)</span>
             <textarea
+              aria-label="Standard input"
               value={stdin}
               onChange={(e) => setStdin(e.target.value)}
               placeholder="Optional input passed to your program..."

@@ -143,12 +143,12 @@ export default function SkillAssessment() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                <select className="input-field w-48" value={language} onChange={e => setLanguage(e.target.value)}>
+                <select className="input-field w-48" aria-label="Programming language" value={language} onChange={e => setLanguage(e.target.value)}>
                   {languages.map(l => <option key={l.key} value={l.key}>{l.label}</option>)}
                 </select>
                 </div>
                 <textarea className="input-field font-mono text-sm" rows={10}
-                  placeholder="Write your code here..." value={code} onChange={e => setCode(e.target.value)} />
+                  placeholder="Write your code here..." aria-label="Code solution" value={code} onChange={e => setCode(e.target.value)} />
                 <button onClick={submitCode} disabled={loading || !code} className="btn-primary">
                   {loading ? 'Running...' : 'Submit Solution'}
                 </button>

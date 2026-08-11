@@ -67,6 +67,7 @@ export default function SocialLinksSection() {
                 <>
                   <input
                     autoFocus
+                    aria-label={`${p.label} URL`}
                     value={draft}
                     onChange={(e) => setDraft(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && save(p.id)}

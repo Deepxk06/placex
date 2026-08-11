@@ -40,11 +40,11 @@ export default function Experience({ data, onChange }) {
         </div>
       ))}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <input className="input-field text-sm" placeholder="Company *" value={current.company} onChange={e => setCurrent(p => ({ ...p, company: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Role *" value={current.role} onChange={e => setCurrent(p => ({ ...p, role: e.target.value }))} />
-        <input className="input-field text-sm" placeholder="Duration (e.g. Jan 2024 - Present)" value={current.duration} onChange={e => setCurrent(p => ({ ...p, duration: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Company *" aria-label="Company" value={current.company} onChange={e => setCurrent(p => ({ ...p, company: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Role *" aria-label="Role" value={current.role} onChange={e => setCurrent(p => ({ ...p, role: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Duration (e.g. Jan 2024 - Present)" aria-label="Duration" value={current.duration} onChange={e => setCurrent(p => ({ ...p, duration: e.target.value }))} />
       </div>
-      <textarea className="input-field text-sm" rows={2} placeholder="Describe your responsibilities and achievements..." value={current.description} onChange={e => setCurrent(p => ({ ...p, description: e.target.value }))} />
+      <textarea className="input-field text-sm" rows={2} aria-label="Experience description" placeholder="Describe your responsibilities and achievements..." value={current.description} onChange={e => setCurrent(p => ({ ...p, description: e.target.value }))} />
       <button onClick={add} className="btn-secondary text-sm w-full">Add Experience</button>
     </div>
   )

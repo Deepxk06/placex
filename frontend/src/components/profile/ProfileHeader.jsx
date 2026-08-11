@@ -108,7 +108,7 @@ export default function ProfileHeader({ profile, onEdit }) {
         {/* Photo */}
         <div className="relative shrink-0 self-center">
           <div {...getRootProps()} className="relative cursor-pointer group">
-            <input {...getInputProps()} />
+            <input {...getInputProps()} aria-label="Upload profile photo" />
             {photo ? (
               <img src={photo} alt={name} className={cn('h-28 w-28 rounded-3xl object-cover border-4 border-primary-100 dark:border-gray-700 shadow-soft', isDragActive && 'opacity-60')} />
             ) : (

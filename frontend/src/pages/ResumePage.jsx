@@ -69,7 +69,7 @@ export default function ResumePage() {
       <div {...getRootProps()} className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
         isDragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400'
       }`}>
-        <input {...getInputProps()} />
+        <input {...getInputProps()} aria-label="Upload resume" />
         <Upload className="mx-auto text-gray-400 mb-4" size={40} />
         {uploading ? (
           <p className="text-gray-500">Uploading...</p>
@@ -123,7 +123,7 @@ export default function ResumePage() {
 
       <div className="card">
         <h2 className="font-semibold mb-4">Resume vs Job Description</h2>
-        <textarea className="input-field mb-3" rows={4} placeholder="Paste job description here..."
+        <textarea className="input-field mb-3" rows={4} aria-label="Job description" placeholder="Paste job description here..."
           value={jdText} onChange={(e) => setJdText(e.target.value)} />
         <button onClick={matchJD} disabled={!resume || !jdText} className="btn-primary">Match Resume</button>
         {jdResult && (

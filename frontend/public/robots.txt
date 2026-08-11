@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin
 
-Sitemap: https://placex.example.com/sitemap.xml
+Sitemap: https://placex-frontend.onrender.com/sitemap.xml

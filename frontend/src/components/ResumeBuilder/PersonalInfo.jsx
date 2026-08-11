@@ -41,17 +41,17 @@ export default function PersonalInfo({ data, onChange }) {
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div><label className="block text-xs text-gray-500 mb-1">Full Name *</label><input className="input-field" placeholder="John Doe" value={data?.fullName || ''} onChange={e => handleChange('fullName', e.target.value)} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Email *</label><input className="input-field" placeholder="john@example.com" value={data?.email || ''} onChange={e => handleChange('email', e.target.value)} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Phone</label><input className="input-field" placeholder="+1 234 567 890" value={data?.phone || ''} onChange={e => handleChange('phone', e.target.value)} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Target Role *</label><input className="input-field" placeholder="Software Engineer" value={data?.targetRole || ''} onChange={e => handleChange('targetRole', e.target.value)} /></div>
+        <div><label htmlFor="pi-fullName" className="block text-xs text-gray-500 mb-1">Full Name *</label><input id="pi-fullName" className="input-field" placeholder="John Doe" value={data?.fullName || ''} onChange={e => handleChange('fullName', e.target.value)} /></div>
+        <div><label htmlFor="pi-email" className="block text-xs text-gray-500 mb-1">Email *</label><input id="pi-email" className="input-field" placeholder="john@example.com" value={data?.email || ''} onChange={e => handleChange('email', e.target.value)} /></div>
+        <div><label htmlFor="pi-phone" className="block text-xs text-gray-500 mb-1">Phone</label><input id="pi-phone" className="input-field" placeholder="+1 234 567 890" value={data?.phone || ''} onChange={e => handleChange('phone', e.target.value)} /></div>
+        <div><label htmlFor="pi-targetRole" className="block text-xs text-gray-500 mb-1">Target Role *</label><input id="pi-targetRole" className="input-field" placeholder="Software Engineer" value={data?.targetRole || ''} onChange={e => handleChange('targetRole', e.target.value)} /></div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div><label className="block text-xs text-gray-500 mb-1">LinkedIn URL</label><input className="input-field" placeholder="https://linkedin.com/in/..." value={data?.linkedIn || ''} onChange={e => handleChange('linkedIn', e.target.value)} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">GitHub URL</label><input className="input-field" placeholder="https://github.com/..." value={data?.github || ''} onChange={e => handleChange('github', e.target.value)} /></div>
-        <div><label className="block text-xs text-gray-500 mb-1">Portfolio URL</label><input className="input-field" placeholder="https://..." value={data?.portfolio || ''} onChange={e => handleChange('portfolio', e.target.value)} /></div>
+        <div><label htmlFor="pi-linkedin" className="block text-xs text-gray-500 mb-1">LinkedIn URL</label><input id="pi-linkedin" className="input-field" placeholder="https://linkedin.com/in/..." value={data?.linkedIn || ''} onChange={e => handleChange('linkedIn', e.target.value)} /></div>
+        <div><label htmlFor="pi-github" className="block text-xs text-gray-500 mb-1">GitHub URL</label><input id="pi-github" className="input-field" placeholder="https://github.com/..." value={data?.github || ''} onChange={e => handleChange('github', e.target.value)} /></div>
+        <div><label htmlFor="pi-portfolio" className="block text-xs text-gray-500 mb-1">Portfolio URL</label><input id="pi-portfolio" className="input-field" placeholder="https://..." value={data?.portfolio || ''} onChange={e => handleChange('portfolio', e.target.value)} /></div>
       </div>
-      <div><label className="block text-xs text-gray-500 mb-1">Professional Summary *</label><textarea className="input-field" rows={3} placeholder="Write a 2-3 line professional summary..." value={data?.summary || ''} onChange={e => handleChange('summary', e.target.value)} /></div>
+      <div><label htmlFor="pi-summary" className="block text-xs text-gray-500 mb-1">Professional Summary *</label><textarea id="pi-summary" className="input-field" rows={3} placeholder="Write a 2-3 line professional summary..." value={data?.summary || ''} onChange={e => handleChange('summary', e.target.value)} /></div>
     </div>
   )
 }

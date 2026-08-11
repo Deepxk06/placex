@@ -45,16 +45,16 @@ export default function Projects({ data, onChange }) {
         </div>
       ))}
       <div className="space-y-2">
-        <input className="input-field text-sm" placeholder="Project Title *" value={current.title} onChange={e => setCurrent(p => ({ ...p, title: e.target.value }))} />
-        <textarea className="input-field text-sm" rows={2} placeholder="Brief description of your project" value={current.description} onChange={e => setCurrent(p => ({ ...p, description: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Project Title *" aria-label="Project title" value={current.title} onChange={e => setCurrent(p => ({ ...p, title: e.target.value }))} />
+        <textarea className="input-field text-sm" rows={2} aria-label="Project description" placeholder="Brief description of your project" value={current.description} onChange={e => setCurrent(p => ({ ...p, description: e.target.value }))} />
         <div className="flex gap-2">
-          <input className="input-field text-sm flex-1" placeholder="Tech used (e.g. React, Node.js)" value={current.techInput} onChange={e => setCurrent(p => ({ ...p, techInput: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTech() }}} />
+          <input className="input-field text-sm flex-1" placeholder="Tech used (e.g. React, Node.js)" aria-label="Technologies used" value={current.techInput} onChange={e => setCurrent(p => ({ ...p, techInput: e.target.value }))} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTech() }}} />
           <button onClick={addTech} className="btn-secondary text-xs">Add Tech</button>
         </div>
         {current.techStack?.length > 0 && (
           <div className="flex flex-wrap gap-1">{current.techStack.map(t => <span key={t} className="bg-gray-100 text-xs px-2 py-0.5 rounded-full">{t}</span>)}</div>
         )}
-        <input className="input-field text-sm" placeholder="Project link (optional)" value={current.link} onChange={e => setCurrent(p => ({ ...p, link: e.target.value }))} />
+        <input className="input-field text-sm" placeholder="Project link (optional)" aria-label="Project link" value={current.link} onChange={e => setCurrent(p => ({ ...p, link: e.target.value }))} />
       </div>
       <div className="flex gap-2">
         <button onClick={add} className="btn-secondary text-sm flex-1">Add Project</button>

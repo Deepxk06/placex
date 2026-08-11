@@ -22,7 +22,7 @@ export default function Achievements({ data, onChange }) {
         </div>
       ))}
       <div className="flex gap-2">
-        <input className="input-field text-sm flex-1" placeholder="e.g. Ranked top 5% in coding competition" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() }}} />
+        <input className="input-field text-sm flex-1" placeholder="e.g. Ranked top 5% in coding competition" aria-label="Achievement" value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); add() }}} />
         <button onClick={add} className="btn-secondary text-sm">Add</button>
       </div>
     </div>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://placex-frontend.onrender.com/login</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/register</loc>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/dashboard</loc>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/profile</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/resume</loc>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/skill-assessment</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/mock-interview</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://placex-frontend.onrender.com/jobs</loc>
+    <priority>0.7</priority>
+  </url>
+</urlset>

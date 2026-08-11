@@ -255,7 +255,7 @@ export default function ResumeBuilder() {
       ) : (
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="w-full lg:w-56 lg:shrink-0 space-y-1">
-            <input className="input-field text-xs mb-2" placeholder="Search sections..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input className="input-field text-xs mb-2" placeholder="Search sections..." aria-label="Search sections" value={search} onChange={e => setSearch(e.target.value)} />
             <div className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0 -mx-1 px-1 lg:mx-0 lg:px-0">
               {SECTION_ORDER.map(name => {
                 const meta = SECTION_META[name]
