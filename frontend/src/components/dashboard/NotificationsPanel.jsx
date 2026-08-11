@@ -1,26 +1,26 @@
 import { motion } from 'framer-motion'
-import { BellRing, CheckCheck } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowUpRight, BellRing } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { dashboardMock as mock } from '../../data/dashboardMock'
 import { Card, CardHeader } from '../ui/Card'
-import { Button } from '../ui/Button'
 
 export default function NotificationsPanel({ notifications = mock.notifications }) {
-  const [items, setItems] = useState(notifications)
-
   return (
     <Card hover>
       <CardHeader
         title="Notifications"
         subtitle="Recent updates for you"
         action={
-          <Button variant="ghost" size="sm" onClick={() => setItems(items.map((i) => ({ ...i, time: 'now' })))}>
-            <CheckCheck size={14} /> Mark all read
-          </Button>
+          <Link
+            to="/settings"
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-colors"
+          >
+            View all <ArrowUpRight size={13} />
+          </Link>
         }
       />
       <div className="space-y-1">
-        {items.map((n, i) => (
+        {notifications.slice(0, 3).map((n, i) => (
           <motion.div
             key={n.id}
             initial={{ opacity: 0, x: 16 }}

@@ -12,8 +12,6 @@ import SkillProgress from '../components/dashboard/SkillProgress'
 import RecentActivity from '../components/dashboard/RecentActivity'
 import NotificationsPanel from '../components/dashboard/NotificationsPanel'
 import PlacementAnalytics from '../components/dashboard/PlacementAnalytics'
-import PlacementTimeline from '../components/dashboard/PlacementTimeline'
-import AIFeatures from '../components/dashboard/AIFeatures'
 import DashboardSkeleton from '../components/dashboard/DashboardSkeleton'
 
 const activityMeta = {
@@ -81,24 +79,23 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <WelcomeHeader name={name} readiness={data.readinessScore} />
+      <WelcomeHeader name={name} readiness={data.readinessScore} statCards={data.statCards} />
       <StatsGrid statCards={data.statCards} />
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 space-y-6">
-          <PlacementDrives />
-          <PlacementAnalytics />
-          <PlacementTimeline />
-          <AIFeatures />
-        </div>
-        <div className="space-y-6">
-          <AIRoleRecommendations />
-          <DailyGoals />
-          <SkillProgress />
-          <RecentActivity items={data.recentActivity} />
-          <NotificationsPanel />
-        </div>
+      <PlacementDrives />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AIRoleRecommendations />
+        <DailyGoals />
       </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SkillProgress />
+        <RecentActivity items={data.recentActivity} />
+      </div>
+
+      <PlacementAnalytics />
+      <NotificationsPanel />
     </div>
   )
 }

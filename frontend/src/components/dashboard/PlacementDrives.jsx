@@ -1,4 +1,5 @@
 import { CalendarClock, CalendarX, IndianRupee, CircleCheck } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { dashboardMock as mock } from '../../data/dashboardMock'
 import { Card, CardHeader } from '../ui/Card'
 import { Button } from '../ui/Button'
@@ -16,7 +17,10 @@ function formatDate(dateStr) {
 }
 
 export default function PlacementDrives({ drives = mock.drives }) {
-  const upcoming = drives.filter((d) => daysUntil(d.deadline) > 0 || daysUntil(d.date) >= 0)
+  const navigate = useNavigate()
+  const upcoming = drives
+    .filter((d) => daysUntil(d.deadline) > 0 || daysUntil(d.date) >= 0)
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
 
   if (upcoming.length === 0) {
     return (
@@ -35,17 +39,25 @@ export default function PlacementDrives({ drives = mock.drives }) {
     <Card id="drives" hover>
       <CardHeader
         title="Upcoming Placement Drives"
-        subtitle="On-campus recruitment schedule"
+        subtitle="Sorted by application deadline — apply before time runs out"
         action={<CalendarClock size={18} className="text-primary-500" />}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {upcoming.map((drive) => {
           const days = daysUntil(drive.date)
+          const urgent = days <= 7
           return (
             <div
               key={drive.id}
-              className="group relative overflow-hidden rounded-2xl border border-gray-200/70 dark:border-gray-800/70 p-4 hover:border-primary-500/40 hover:shadow-soft transition-all duration-300"
+              className={`group relative overflow-hidden rounded-2xl border p-4 transition-all duration-300 ${
+                urgent
+                  ? 'border-rose-300/70 dark:border-rose-500/40 ring-1 ring-rose-400/30 shadow-soft'
+                  : 'border-gray-200/70 dark:border-gray-800/70 hover:border-primary-500/40 hover:shadow-soft'
+              }`}
             >
+              {urgent && (
+                <div className="absolute left-0 top-4 h-6 w-1 rounded-r-full bg-gradient-to-b from-rose-500 to-red-400" />
+              )}
               <div className="absolute right-0 top-0 h-20 w-20 rounded-bl-full bg-gradient-to-br from-primary-500/10 to-sky-500/10" />
               <div className="relative">
                 <div className="flex items-center justify-between gap-2">
@@ -82,10 +94,11 @@ export default function PlacementDrives({ drives = mock.drives }) {
                   <span className="flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300">
                     <CalendarClock size={13} className="text-primary-500" /> Deadline: {formatDate(drive.deadline)}
                   </span>
+                  {urgent && <Badge tone="danger">Closing soon</Badge>}
                 </div>
 
                 <div className="mt-3">
-                  <Button size="sm" className="w-full">Apply Now</Button>
+                  <Button size="sm" className="w-full" onClick={() => navigate('/jobs')}>Apply Now</Button>
                 </div>
               </div>
             </div>

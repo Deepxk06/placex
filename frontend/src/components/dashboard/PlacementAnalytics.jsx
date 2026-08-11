@@ -1,7 +1,6 @@
-import { BarChart3 } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import {
-  Area,
-  AreaChart,
   Bar,
   BarChart,
   CartesianGrid,
@@ -31,13 +30,20 @@ export default function PlacementAnalytics() {
       <CardHeader
         title="Placement Analytics"
         subtitle="Your performance over the last 7 months"
-        action={<BarChart3 size={18} className="text-primary-500" />}
+        action={
+          <Link
+            to="/placement-prediction"
+            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-semibold text-primary-600 dark:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-500/10 transition-colors"
+          >
+            View full analytics <ArrowUpRight size={13} />
+          </Link>
+        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <p className={chartTitle}>Applications per Month</p>
-          <div className="h-44">
+          <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={mock.monthlyAnalytics} barSize={18}>
                 <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
@@ -51,58 +57,18 @@ export default function PlacementAnalytics() {
         </div>
 
         <div>
-          <p className={chartTitle}>Coding Score Trend</p>
-          <div className="h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={mock.monthlyAnalytics}>
-                <defs>
-                  <linearGradient id="codingTrend" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="#10b981" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-                <XAxis dataKey="month" tick={axisTick} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={axisTick} axisLine={false} tickLine={false} width={26} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Area type="monotone" dataKey="coding" name="Coding score" stroke="#10b981" strokeWidth={2.5} fill="url(#codingTrend)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div>
-          <p className={chartTitle}>Resume Score Trend</p>
-          <div className="h-44">
+          <p className={chartTitle}>Score Trends (Coding · Resume · Interview)</p>
+          <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={mock.monthlyAnalytics}>
                 <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
                 <XAxis dataKey="month" tick={axisTick} axisLine={false} tickLine={false} />
                 <YAxis domain={[0, 100]} tick={axisTick} axisLine={false} tickLine={false} width={26} />
                 <Tooltip contentStyle={tooltipStyle} />
-                <Line type="monotone" dataKey="resume" name="Resume score" stroke="#0ea5e9" strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                <Line type="monotone" dataKey="coding" name="Coding score" stroke="#10b981" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                <Line type="monotone" dataKey="resume" name="Resume score" stroke="#0ea5e9" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
+                <Line type="monotone" dataKey="interview" name="Interview score" stroke="#8b5cf6" strokeWidth={2} dot={false} activeDot={{ r: 4 }} />
               </LineChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div>
-          <p className={chartTitle}>Interview Performance</p>
-          <div className="h-44">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={mock.interviewPerformance} barSize={22}>
-                <defs>
-                  <linearGradient id="interviewGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.55} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="var(--chart-grid)" vertical={false} />
-                <XAxis dataKey="attempt" tick={axisTick} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={axisTick} axisLine={false} tickLine={false} width={26} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'rgba(139,92,246,0.08)' }} />
-                <Bar dataKey="score" name="Score" fill="url(#interviewGrad)" radius={[6, 6, 0, 0]} />
-              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

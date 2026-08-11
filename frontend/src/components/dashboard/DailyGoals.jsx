@@ -3,12 +3,10 @@ import { useState } from 'react'
 import { ListChecks, Check } from 'lucide-react'
 import { dashboardMock as mock } from '../../data/dashboardMock'
 import { Card, CardHeader } from '../ui/Card'
-import { Progress } from '../ui/Progress'
 
 export default function DailyGoals() {
   const [goals, setGoals] = useState(mock.dailyGoals)
   const done = goals.filter((g) => g.done).length
-  const pct = Math.round((done / goals.length) * 100)
 
   const toggle = (id) => {
     setGoals((prev) => prev.map((g) => (g.id === id ? { ...g, done: !g.done } : g)))
@@ -21,13 +19,6 @@ export default function DailyGoals() {
         subtitle={`${done} of ${goals.length} completed`}
         action={<ListChecks size={18} className="text-primary-500" />}
       />
-      <div className="mb-4">
-        <div className="mb-1.5 flex items-center justify-between text-xs">
-          <span className="font-semibold text-gray-600 dark:text-gray-300">Daily progress</span>
-          <span className="font-bold text-primary-600 dark:text-primary-400">{pct}%</span>
-        </div>
-        <Progress value={pct} color="bg-gradient-to-r from-primary-500 to-sky-500" />
-      </div>
       <div className="space-y-2">
         {goals.map((goal, i) => (
           <motion.button
