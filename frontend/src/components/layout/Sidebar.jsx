@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
-  UserRound,
   FileText,
   Briefcase,
   Code2,
@@ -23,7 +22,6 @@ const NAV_GROUPS = [
     group: 'Overview',
     items: [
       { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-      { label: 'Profile', to: '/profile', icon: UserRound },
       { label: 'Resume', to: '/resume', icon: FileText },
       { label: 'Jobs', to: '/jobs', icon: Briefcase },
     ],

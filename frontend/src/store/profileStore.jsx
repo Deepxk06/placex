@@ -24,7 +24,7 @@ export const DEFAULT_EXT = {
 }
 
 function extKey() {
-  return `${STORAGE_PREFIX}${localStorage.getItem('placex_uid') || 'guest'}`
+  return `${STORAGE_PREFIX}${sessionStorage.getItem('placex_uid') || 'guest'}`
 }
 
 function cloneDeep(v) {

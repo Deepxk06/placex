@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { LogOut } from 'lucide-react'
 import { useAuth } from '../../store/authStore'
 import api from '../../services/api'
@@ -6,6 +7,7 @@ import { cn } from '../../utils/helpers'
 
 export default function SidebarFooter({ collapsed, onNavigate }) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [photo, setPhoto] = useState(localStorage.getItem('placex_photo') || '')
 
   useEffect(() => {
@@ -60,6 +62,7 @@ export default function SidebarFooter({ collapsed, onNavigate }) {
       <button
         onClick={() => {
           logout()
+          navigate('/login')
           onNavigate && onNavigate()
         }}
         className={cn(

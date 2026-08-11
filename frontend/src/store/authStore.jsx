@@ -3,20 +3,32 @@ import api from '../services/api'
 
 const AuthContext = createContext(null)
 
+const AUTH_KEYS = ['placex_token', 'placex_uid', 'placex_email', 'placex_name']
+
+function clearSession() {
+  AUTH_KEYS.forEach((k) => sessionStorage.removeItem(k))
+}
+
+function readSession(keys) {
+  return keys.map((k) => sessionStorage.getItem(k))
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const token = localStorage.getItem('placex_token')
-    const uid = localStorage.getItem('placex_uid')
-    const email = localStorage.getItem('placex_email')
-    const name = localStorage.getItem('placex_name')
+    const [token, uid, email, name] = readSession(AUTH_KEYS)
     if (token && uid) {
       api.get('/auth/me').then((res) => {
         setUser({ uid, email, name: res.data?.name || name, profile: res.data })
-      }).catch(() => {
-        setUser({ uid, email, name })
+      }).catch((err) => {
+        if (err.response?.status === 401) {
+          clearSession()
+          setUser(null)
+        } else {
+          setUser({ uid, email, name })
+        }
       }).finally(() => setLoading(false))
     } else {
       setLoading(false)
@@ -25,10 +37,10 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const res = await api.post('/auth/dev-login', { email, password })
-    localStorage.setItem('placex_token', res.data.token)
-    localStorage.setItem('placex_uid', res.data.uid)
-    localStorage.setItem('placex_email', res.data.email)
-    localStorage.setItem('placex_name', res.data.name)
+    sessionStorage.setItem('placex_token', res.data.token)
+    sessionStorage.setItem('placex_uid', res.data.uid)
+    sessionStorage.setItem('placex_email', res.data.email)
+    sessionStorage.setItem('placex_name', res.data.name)
     setUser({
       uid: res.data.uid,
       email: res.data.email,
@@ -39,10 +51,10 @@ export function AuthProvider({ children }) {
 
   const register = async (email, password, name) => {
     const res = await api.post('/auth/dev-login', { email, password })
-    localStorage.setItem('placex_token', res.data.token)
-    localStorage.setItem('placex_uid', res.data.uid)
-    localStorage.setItem('placex_email', res.data.email)
-    localStorage.setItem('placex_name', name || res.data.name)
+    sessionStorage.setItem('placex_token', res.data.token)
+    sessionStorage.setItem('placex_uid', res.data.uid)
+    sessionStorage.setItem('placex_email', res.data.email)
+    sessionStorage.setItem('placex_name', name || res.data.name)
     setUser({
       uid: res.data.uid,
       email: res.data.email,
@@ -52,10 +64,7 @@ export function AuthProvider({ children }) {
   }
 
   const logout = () => {
-    localStorage.removeItem('placex_token')
-    localStorage.removeItem('placex_uid')
-    localStorage.removeItem('placex_email')
-    localStorage.removeItem('placex_name')
+    clearSession()
     setUser(null)
   }
 

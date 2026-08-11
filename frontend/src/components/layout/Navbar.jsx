@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, ChevronDown, UserRound, LogOut, Search, Bell, Settings, HelpCircle } from 'lucide-react'
 import { useAuth } from '../../store/authStore'
@@ -10,6 +10,7 @@ import { Badge } from '../ui/Badge'
 
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth()
+  const navigate = useNavigate()
   const [photo, setPhoto] = useState(localStorage.getItem('placex_photo') || '')
   const [profileOpen, setProfileOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -181,6 +182,7 @@ export default function Navbar({ onMenuClick }) {
                       onClick={() => {
                         setProfileOpen(false)
                         logout()
+                        navigate('/login')
                       }}
                       className="mt-1 flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors border-t border-gray-200/70 dark:border-gray-800/70"
                     >

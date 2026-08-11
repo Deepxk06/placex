@@ -63,7 +63,7 @@ export default function ProfilePage() {
     )
   }
 
-  const uid = localStorage.getItem('placex_uid')
+  const uid = sessionStorage.getItem('placex_uid')
 
   return (
     <div className="space-y-6">

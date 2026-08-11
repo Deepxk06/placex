@@ -197,7 +197,12 @@ export default function SettingsCard({ settings, onUpdate }) {
           <button
             onClick={() => {
               setDeleteOpen(false)
-              Object.keys(localStorage).forEach((k) => k.startsWith('placex_') && localStorage.removeItem(k))
+              Object.keys(localStorage)
+                .filter((k) => k.startsWith('placex_'))
+                .forEach((k) => localStorage.removeItem(k))
+              Object.keys(sessionStorage)
+                .filter((k) => k.startsWith('placex_'))
+                .forEach((k) => sessionStorage.removeItem(k))
               logout()
             }}
             className="rounded-xl bg-gradient-to-r from-rose-500 to-red-500 px-5 py-2 text-sm font-semibold text-white shadow-glass"
