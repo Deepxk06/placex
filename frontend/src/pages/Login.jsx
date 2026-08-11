@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-accent-50">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-accent-50">
       <div className="card w-full max-w-md mx-4">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-primary-600">PlaceX</h1>
@@ -35,14 +35,14 @@ export default function Login() {
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" className="input-field" value={email}
-              onChange={(e) => setEmail(e.target.value)} required />
+            <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input id="login-email" type="email" className="input-field" value={email}
+              onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input type="password" className="input-field" value={password}
-              onChange={(e) => setPassword(e.target.value)} required />
+            <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <input id="login-password" type="password" className="input-field" value={password}
+              onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? 'Signing in...' : 'Sign In'}
@@ -50,9 +50,9 @@ export default function Login() {
         </form>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don't have an account? <Link to="/register" className="text-primary-600 hover:underline">Register</Link>
+          Don't have an account? <Link to="/register" className="text-primary-600 underline hover:text-primary-700">Register</Link>
         </p>
       </div>
-    </div>
+    </main>
   )
 }
