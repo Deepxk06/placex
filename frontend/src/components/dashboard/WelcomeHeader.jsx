@@ -12,12 +12,24 @@ function readinessBadge(score) {
   return { tone: 'danger', label: 'Not ready yet' }
 }
 
-export default function WelcomeHeader({ name = student.name, readiness = mock.readinessScore, statCards = mock.statCards }) {
+function buildCollegeLabel(profile) {
+  const parts = []
+  if (profile.branch) parts.push(profile.branch)
+  else if (profile.college) parts.push('Student')
+  if (profile.gradYear) parts.push(`${profile.gradYear} Year`)
+  if (parts.length > 0) return parts.join(' — ')
+  return student.college
+}
+
+export default function WelcomeHeader({ name = student.name, readiness = mock.readinessScore, statCards = mock.statCards, profile = {} }) {
   const badge = readinessBadge(readiness)
   const weakAreas = statCards
     .filter((s) => s.suffix === '%' && s.value != null && s.value < 80)
     .sort((a, b) => a.value - b.value)
     .slice(0, 3)
+
+  const targetRole = profile.targetRole || student.targetRole
+  const collegeLabel = buildCollegeLabel(profile)
 
   return (
     <FadeIn>
@@ -36,10 +48,10 @@ export default function WelcomeHeader({ name = student.name, readiness = mock.re
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-0.5 text-xs text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1.5">
-                <GraduationCap size={14} /> {student.college}
+                <GraduationCap size={14} /> {collegeLabel}
               </span>
               <span className="flex items-center gap-1.5">
-                <Target size={14} /> Target: {student.targetRole}
+                <Target size={14} /> Target: {targetRole}
               </span>
             </div>
             {weakAreas.length > 0 && (

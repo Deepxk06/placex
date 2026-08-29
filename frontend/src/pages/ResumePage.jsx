@@ -1,168 +1,268 @@
-import { useState, useCallback } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { Upload, FileText, CheckCircle, AlertCircle, ArrowRight } from 'lucide-react'
-import api from '../services/api'
-import { getScoreBg } from '../utils/helpers'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRight, FileText, LayoutDashboard } from 'lucide-react'
+import api from '../services/api'
+import { useToast } from '../components/ui/ToastProvider'
+import { Button } from '../components/ui/Button'
+import { SkeletonCard } from '../components/ui/Skeleton'
+import ResumeUpload, { PROCESSING_STEPS } from '../components/resume/ResumeUpload'
+import ScoreCards from '../components/resume/ScoreCards'
+import SkillsPanel from '../components/resume/SkillsPanel'
+import ATSPanel from '../components/resume/ATSPanel'
+import ProjectsPanel from '../components/resume/ProjectsPanel'
+import JobMatchPanel from '../components/resume/JobMatchPanel'
+import RecommendationsPanel from '../components/resume/RecommendationsPanel'
+import HistoryPanel from '../components/resume/HistoryPanel'
+import { cn } from '../utils/helpers'
+
+const TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'skills', label: 'Skills' },
+  { id: 'ats', label: 'ATS' },
+  { id: 'projects', label: 'Projects & Experience' },
+  { id: 'jobmatch', label: 'Job Match' },
+  { id: 'recommendations', label: 'Recommendations' },
+  { id: 'history', label: 'History' },
+]
 
 export default function ResumePage() {
-  const [uploading, setUploading] = useState(false)
-  const [resume, setResume] = useState(null)
-  const [atsScore, setAtsScore] = useState(null)
-  const [jdText, setJdText] = useState('')
-  const [jdResult, setJdResult] = useState(null)
-  const [error, setError] = useState('')
+  const { toast } = useToast()
+  const [tab, setTab] = useState('overview')
+  const [resumes, setResumes] = useState([])
+  const [active, setActive] = useState(null)
+  const [loadingHistory, setLoadingHistory] = useState(true)
+  const [processing, setProcessing] = useState(false)
+  const [step, setStep] = useState(0)
+  const timerRef = useRef(null)
 
-  const onDrop = useCallback(async (acceptedFiles) => {
-    const file = acceptedFiles[0]
-    if (!file) return
-    setUploading(true)
-    setError('')
+  const analysis = active?.analysis || null
+  const parsedData = active?.parsedData || {}
+
+  const loadResumes = useCallback(async () => {
+    try {
+      const res = await api.get('/resume/')
+      setResumes(res.data || [])
+    } catch {
+      setResumes([])
+    } finally {
+      setLoadingHistory(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadResumes()
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [loadResumes])
+
+  const stopTimer = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current)
+      timerRef.current = null
+    }
+  }
+
+  const handleFileSelected = async (file) => {
+    setProcessing(true)
+    setStep(0)
+    timerRef.current = setInterval(() => {
+      setStep((s) => Math.min(s + 1, PROCESSING_STEPS.length - 1))
+    }, 700)
     const formData = new FormData()
     formData.append('file', file)
     try {
       const res = await api.post('/resume/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 120000,
       })
-      setResume(res.data)
+      const data = res.data
+      stopTimer()
+      setStep(PROCESSING_STEPS.length)
+      setTimeout(() => setProcessing(false), 500)
+      setActive(data)
+      setTab('overview')
+      setResumes((prev) => [{ id: data.id, ...pickHistoryFields(data) }, ...prev.filter((r) => r.id !== data.id)])
+      toast({ type: 'success', message: 'Resume analyzed successfully' })
     } catch (err) {
-      setError('Failed to upload resume. Please try again.')
-    } finally {
-      setUploading(false)
+      stopTimer()
+      setProcessing(false)
+      const detail = err.response?.data?.detail
+      toast({ type: 'error', message: detail || 'Failed to analyze resume. Please try again.' })
     }
-  }, [])
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop, accept: { 'application/pdf': ['.pdf'] }, maxFiles: 1,
-  })
-
-  const checkATS = async () => {
-    if (!resume) return
-    try {
-      const res = await api.post(`/resume/${resume.id}/ats-score`)
-      setAtsScore(res.data)
-    } catch { setError('Failed to check ATS score') }
   }
 
-  const matchJD = async () => {
-    if (!resume || !jdText) return
+  const pickHistoryFields = (data) => ({
+    id: data.id,
+    originalFile: data.originalFile,
+    createdAt: data.createdAt,
+    resumeScore: data.resumeScore,
+    atsScore: data.atsScore,
+    jdMatchScore: data.jdMatchScore,
+  })
+
+  const openResume = async (id) => {
     try {
-      const res = await api.post(`/resume/${resume.id}/match-jd?jd_text=${encodeURIComponent(jdText)}`)
-      setJdResult(res.data)
-    } catch { setError('Failed to match JD') }
+      const res = await api.get(`/resume/${id}`)
+      setActive(res.data)
+      setTab('overview')
+    } catch {
+      toast({ type: 'error', message: 'Could not open this analysis' })
+    }
+  }
+
+  const deleteResume = async (id) => {
+    try {
+      await api.delete(`/resume/${id}`)
+      setResumes((prev) => prev.filter((r) => r.id !== id))
+      if (active?.id === id) setActive(null)
+      toast({ type: 'success', message: 'Resume deleted' })
+    } catch {
+      toast({ type: 'error', message: 'Could not delete this resume' })
+    }
+  }
+
+  const handleMatchResult = (jobMatch) => {
+    setActive((prev) => (prev ? { ...prev, analysis: { ...(prev.analysis || {}), jobMatch } } : prev))
+    toast({ type: 'success', message: `Job match: ${Math.round(jobMatch.score)}%` })
+  }
+
+  const reanalyze = async () => {
+    if (!active) return
+    setProcessing(true)
+    setStep(0)
+    timerRef.current = setInterval(() => {
+      setStep((s) => Math.min(s + 1, PROCESSING_STEPS.length - 1))
+    }, 700)
+    try {
+      const res = await api.post(`/resume/${active.id}/analyze`, {}, { timeout: 120000 })
+      stopTimer()
+      setStep(PROCESSING_STEPS.length)
+      setTimeout(() => setProcessing(false), 500)
+      setActive((prev) => ({ ...prev, analysis: res.data, resumeScore: res.data.resumeScore, atsScore: res.data.atsScore }))
+      setResumes((prev) =>
+        prev.map((r) => (r.id === active.id ? { ...r, resumeScore: res.data.resumeScore, atsScore: res.data.atsScore } : r))
+      )
+      toast({ type: 'success', message: 'Analysis refreshed' })
+    } catch {
+      stopTimer()
+      setProcessing(false)
+      toast({ type: 'error', message: 'Re-analysis failed' })
+    }
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Resume Analysis</h1>
-          <p className="text-gray-500">Upload your resume for ATS scoring and JD matching</p>
+          <p className="text-gray-500">Upload your resume to analyze skills, ATS compatibility and job readiness</p>
         </div>
-        <Link to="/resume-builder" className="btn-primary flex items-center gap-2">
-          Build Resume <ArrowRight size={16} />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={reanalyze} disabled={!active || processing}>
+            Re-analyze
+          </Button>
+          <Link to="/resume-builder">
+            <Button size="sm">
+              Build Resume <ArrowRight size={15} />
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{error}</div>}
+      <ResumeUpload processing={processing} step={step} onFileSelected={handleFileSelected} />
 
-      <div {...getRootProps()} className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
-        isDragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400'
-      }`}>
-        <input {...getInputProps()} aria-label="Upload resume" />
-        <Upload className="mx-auto text-gray-400 mb-4" size={40} />
-        {uploading ? (
-          <p className="text-gray-500">Uploading...</p>
-        ) : resume ? (
-          <div className="flex items-center justify-center gap-2 text-green-600">
-            <CheckCircle size={20} />
-            <span>Resume uploaded successfully!</span>
-          </div>
-        ) : (
-          <div>
-            <p className="font-medium text-gray-700">Drop your resume here, or click to browse</p>
-            <p className="text-sm text-gray-400 mt-1">Supports PDF format only</p>
-          </div>
-        )}
-      </div>
-
-      {resume && !atsScore && (
-        <button onClick={checkATS} className="btn-primary">Check ATS Score</button>
-      )}
-
-      {atsScore && (
-        <div className="card">
-          <h2 className="font-semibold mb-4">ATS Score</h2>
-          <div className="flex items-center gap-4 mb-4">
-            <div className={`text-3xl font-bold ${atsScore.overall >= 80 ? 'text-green-600' : atsScore.overall >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
-              {atsScore.overall}%
-            </div>
-            <div className="flex-1 bg-gray-200 rounded-full h-3">
-              <div className={`h-3 rounded-full transition-all ${
-                atsScore.overall >= 80 ? 'bg-green-500' : atsScore.overall >= 50 ? 'bg-yellow-500' : 'bg-red-500'
-              }`} style={{ width: `${atsScore.overall}%` }} />
-            </div>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-4">
-            <div><div className="text-xs text-gray-500">Keywords</div><div className="font-medium">{atsScore.keywordScore}%</div></div>
-            <div><div className="text-xs text-gray-500">Format</div><div className="font-medium">{atsScore.formatScore}%</div></div>
-            <div><div className="text-xs text-gray-500">Length</div><div className="font-medium">{atsScore.lengthScore}%</div></div>
-            <div><div className="text-xs text-gray-500">Action Verbs</div><div className="font-medium">{atsScore.verbScore}%</div></div>
-            <div><div className="text-xs text-gray-500">Sections</div><div className="font-medium">{atsScore.sectionScore}%</div></div>
-          </div>
-          <div className="space-y-2">
-            {atsScore.suggestions.map((s, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                <AlertCircle size={14} className="text-yellow-500 mt-0.5 shrink-0" />
-                <span>{s}</span>
-              </div>
-            ))}
-          </div>
+      {/* Result tabs */}
+      {active && (
+        <div className="flex flex-wrap gap-1.5">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={cn(
+                'rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors',
+                tab === t.id
+                  ? 'bg-gradient-to-r from-primary-600 to-sky-500 text-white shadow-glass'
+                  : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
+              )}
+              aria-label={`${t.label} tab`}
+            >
+              {t.label}
+            </button>
+          ))}
         </div>
       )}
 
-      <div className="card">
-        <h2 className="font-semibold mb-4">Resume vs Job Description</h2>
-        <textarea className="input-field mb-3" rows={4} aria-label="Job description" placeholder="Paste job description here..."
-          value={jdText} onChange={(e) => setJdText(e.target.value)} />
-        <button onClick={matchJD} disabled={!resume || !jdText} className="btn-primary">Match Resume</button>
-        {jdResult && (
-          <div className="mt-4 space-y-3">
-            <div className="flex items-center gap-3">
-              <span className="font-medium">Match Score:</span>
-              <span className={`px-2 py-1 rounded-full text-sm font-medium ${getScoreBg(jdResult.matchScore)}`}>
-                {jdResult.matchScore}%
-              </span>
+      {active && tab === 'overview' && (
+        <div className="space-y-6">
+          <ScoreCards analysis={analysis} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="lg:col-span-2">
+              <ATSPanel analysis={analysis} />
             </div>
-            {jdResult.matchingSkills?.length > 0 && (
-              <div>
-                <span className="text-sm text-gray-500">Matching Skills:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {jdResult.matchingSkills.map((s, i) => (
-                    <span key={i} className="badge-success">{s}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {jdResult.missingSkills?.length > 0 && (
-              <div>
-                <span className="text-sm text-gray-500">Missing Skills:</span>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {jdResult.missingSkills.map((s, i) => (
-                    <span key={i} className="badge-warning">{s}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {jdResult.suggestions?.map((s, i) => (
-              <div key={i} className="flex items-start gap-2 text-sm text-gray-600">
-                <AlertCircle size={14} className="text-blue-500 mt-0.5 shrink-0" />
-                <span>{s}</span>
-              </div>
-            ))}
           </div>
-        )}
-      </div>
+          <RecommendationsPanel analysis={analysis} />
+        </div>
+      )}
+
+      {active && tab === 'skills' && (
+        <SkillsPanel analysis={analysis} parsedData={parsedData} jobMatch={analysis?.jobMatch} />
+      )}
+
+      {active && tab === 'ats' && <ATSPanel analysis={analysis} />}
+
+      {active && tab === 'projects' && <ProjectsPanel analysis={analysis} parsedData={parsedData} />}
+
+      {active && tab === 'jobmatch' && (
+        <JobMatchPanel resumeId={active.id} analysis={analysis} onMatchResult={handleMatchResult} />
+      )}
+
+      {active && tab === 'recommendations' && <RecommendationsPanel analysis={analysis} />}
+
+      {active && tab === 'history' && (
+        <HistoryPanel
+          resumes={resumes}
+          activeId={active.id}
+          onSelect={openResume}
+          onDelete={deleteResume}
+        />
+      )}
+
+      {!active && !processing && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="flex items-start gap-3 rounded-2xl border border-gray-200 p-5 dark:border-gray-700">
+            <FileText size={18} className="mt-0.5 shrink-0 text-primary-500" />
+            <div>
+              <p className="font-semibold">What you get</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Resume quality score, estimated ATS compatibility with warnings, skill levels and categories,
+                project &amp; experience analysis, and prioritized improvement recommendations.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-2xl border border-gray-200 p-5 dark:border-gray-700">
+            <LayoutDashboard size={18} className="mt-0.5 shrink-0 text-sky-500" />
+            <div>
+              <p className="font-semibold">Job matching (optional)</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Paste a job description to get a weighted job match score, matched and missing skills, and
+                semantic similarity.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loadingHistory && !active ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : (
+        resumes.length > 0 && (
+          <HistoryPanel resumes={resumes} activeId={active?.id} onSelect={openResume} onDelete={deleteResume} />
+        )
+      )}
     </div>
   )
 }

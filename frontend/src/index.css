@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+  #resume-print-area {
+    position: static !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
 :root {
   --tooltip-bg: #ffffff;
   --chart-grid: rgba(148, 163, 184, 0.25);

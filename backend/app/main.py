@@ -55,35 +55,49 @@ async def ensure_schema():
     """Verify DB connectivity and create tables only if missing."""
     if db_mod.engine is None:
         await connect_db()
+    is_sqlite = str(db_mod.engine.url).startswith("sqlite")
     try:
-        async with db_mod.engine.connect() as conn:
-            users_exists = (
-                await conn.execute(text("SELECT to_regclass('users')"))
-            ).scalar()
-            profiles_exists = (
-                await conn.execute(text("SELECT to_regclass('user_profiles')"))
-            ).scalar()
-        if not users_exists:
+        async with db_mod.engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        if not is_sqlite:
+            async with db_mod.engine.connect() as conn:
+                profiles_exists = (
+                    await conn.execute(text("SELECT to_regclass('user_profiles')"))
+                ).scalar()
+            if not profiles_exists:
+                async with db_mod.engine.begin() as conn:
+                    await conn.execute(text(PROFILES_DDL))
+            resume_alters = [
+                "ALTER TABLE resumes ADD COLUMN IF NOT EXISTS analysis JSON",
+                "ALTER TABLE resumes ADD COLUMN IF NOT EXISTS resume_score FLOAT",
+                "ALTER TABLE resumes ADD COLUMN IF NOT EXISTS storage_key VARCHAR DEFAULT ''",
+                "ALTER TABLE resumes ADD COLUMN IF NOT EXISTS file_type VARCHAR DEFAULT ''",
+                "ALTER TABLE resumes ADD COLUMN IF NOT EXISTS file_size INTEGER DEFAULT 0",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS name VARCHAR DEFAULT 'Untitled Resume'",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS target_role VARCHAR DEFAULT ''",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS experience_level VARCHAR DEFAULT 'fresher'",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS version INTEGER DEFAULT 1",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS template_id VARCHAR DEFAULT 'classic'",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS sections JSON",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS customizations JSON",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS created_at TIMESTAMP",
+                "ALTER TABLE resume_builder ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP",
+            ]
             async with db_mod.engine.begin() as conn:
-                await conn.run_sync(Base.metadata.create_all)
-        if not profiles_exists:
-            async with db_mod.engine.begin() as conn:
-                await conn.execute(text(PROFILES_DDL))
+                for statement in resume_alters:
+                    await conn.execute(text(statement))
     except Exception as e:
-        print(f"Startup DB init skipped: {e}")
+        print(f"[DB INIT ERROR] {e}")
+        import traceback
+        traceback.print_exc()
 
 
 @asynccontextmanager
 async def lifespan(fastapi_app: FastAPI):
     await connect_db()
     init_firebase()
-    startup_task = asyncio.create_task(ensure_schema())
+    await ensure_schema()
     yield
-    startup_task.cancel()
-    try:
-        await startup_task
-    except (asyncio.CancelledError, Exception):
-        pass
     await disconnect_db()
 
 
@@ -129,6 +143,7 @@ async def health():
 
 
 from app.api import auth, resume, assessment, interview, prediction, jobs, roadmap, dashboard, chatbot, company, admin, alumni, resume_builder, profile, compiler
+from app.api import certificates, gd, company_questions, learning, job_applications
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(resume.router, prefix="/api/resume", tags=["Resume"])
@@ -145,3 +160,8 @@ app.include_router(alumni.router, prefix="/api/alumni", tags=["Alumni Network"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin Dashboard"])
 app.include_router(profile.router, prefix="/api/profile", tags=["Profile"])
 app.include_router(compiler.router, prefix="/api/compiler", tags=["Code Compiler"])
+app.include_router(certificates.router, prefix="/api/certificates", tags=["Certificates"])
+app.include_router(gd.router, prefix="/api/gd", tags=["Group Discussion"])
+app.include_router(company_questions.router, prefix="/api/company-questions", tags=["Company Questions"])
+app.include_router(learning.router, prefix="/api/learning", tags=["Learning"])
+app.include_router(job_applications.router, prefix="/api/job-applications", tags=["Job Applications"])

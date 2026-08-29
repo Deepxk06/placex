@@ -20,6 +20,11 @@ const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const SettingsPage = lazy(() => import('./pages/SettingsPage'))
 const CodePlayground = lazy(() => import('./pages/CodePlayground'))
+const Certificates = lazy(() => import('./pages/Certificates'))
+const GDPreparation = lazy(() => import('./pages/GDPreparation'))
+const CompanyQuestions = lazy(() => import('./pages/CompanyQuestions'))
+const LearningModule = lazy(() => import('./pages/LearningModule'))
+const Applications = lazy(() => import('./pages/Applications'))
 
 const TITLES = {
   '/login': 'Sign In - PlaceX',
@@ -39,6 +44,11 @@ const TITLES = {
   '/company-insights': 'Company Insights - PlaceX',
   '/alumni': 'Alumni Network - PlaceX',
   '/admin': 'Admin Dashboard - PlaceX',
+  '/certificates': 'Certificates - PlaceX',
+  '/gd-preparation': 'GD Preparation - PlaceX',
+  '/company-questions': 'Company Questions - PlaceX',
+  '/learning': 'Learning Module - PlaceX',
+  '/applications': 'Applications - PlaceX',
 }
 
 function PageTitle() {
@@ -82,6 +92,11 @@ export default function App() {
             <Route path="/company-insights" element={<CompanyInsights />} />
             <Route path="/alumni" element={<AlumniNetwork />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/certificates" element={<Certificates />} />
+            <Route path="/gd-preparation" element={<GDPreparation />} />
+            <Route path="/company-questions" element={<CompanyQuestions />} />
+            <Route path="/learning" element={<LearningModule />} />
+            <Route path="/applications" element={<Applications />} />
           </Route>
         </Routes>
       </Suspense>

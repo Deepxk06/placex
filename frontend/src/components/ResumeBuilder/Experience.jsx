@@ -17,7 +17,7 @@ export default function Experience({ data, onChange }) {
   const improveDesc = async (entry) => {
     setImproving(entry.id)
     try {
-      const { data: res } = await api.post('/api/resume-builder/improve-experience', { description: entry.description })
+      const { data: res } = await api.post('/resume-builder/improve-experience', { description: entry.description })
       const improved = res.improved.replace(/^\d+[\.\)]\s*/gm, '').split('\n').filter(Boolean).join(' ')
       const updated = entries.map(e => e.id === entry.id ? { ...e, description: improved || e.description } : e)
       onChange('experience', { entries: updated })

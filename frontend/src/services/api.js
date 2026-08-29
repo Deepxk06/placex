@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://placex-bff8.onrender.com'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
 
 const api = axios.create({
-  baseURL: `${API_BASE}/api`,
+  baseURL: API_BASE ? `${API_BASE}/api` : '/api',
   headers: { 'Content-Type': 'application/json' },
   timeout: 30000,
 })

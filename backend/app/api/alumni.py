@@ -78,7 +78,7 @@ async def send_connect_request(alumni_id: str, message: str = "", uid: str = Dep
         if existing:
             raise HTTPException(400, "Connect request already sent")
         now = datetime.now(timezone.utc)
-        doc = ConnectRequest(id=uuid.uuid4(), from_user_id=uid, to_user_id=alumni_id,
+        doc = ConnectRequest(id=str(uuid.uuid4()), from_user_id=uid, to_user_id=alumni_id,
                              status="pending", message=message, created_at=now, updated_at=now)
         session.add(doc)
         await session.commit()

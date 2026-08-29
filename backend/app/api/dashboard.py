@@ -54,6 +54,15 @@ async def get_student_dashboard(uid: str = Depends(verify_token)):
             "interviewPerformance": interview_performance,
             "placementReadiness": readiness,
             "recentActivity": sorted(recent, key=lambda x: x.get("time") or datetime.min.replace(tzinfo=timezone.utc), reverse=True)[:10],
+            "userProfile": {
+                "name": user.name if user else "",
+                "college": user.college if user else "",
+                "branch": user.branch if user else "",
+                "gradYear": user.grad_year if user else None,
+                "targetRole": user.target_role if user else "",
+                "skills": user.skills if user else [],
+                "cgpa": user.cgpa if user else 0.0,
+            },
         }
 
 

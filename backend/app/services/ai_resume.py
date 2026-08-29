@@ -48,6 +48,36 @@ Improved:"""
     return await _call_groq(prompt)
 
 
+REWRITE_ACTIONS = {
+    "improve": "Rewrite the summary to be clearer, stronger and more professional.",
+    "concise": "Make the summary concise, cutting it down to 2 sentences without losing key facts.",
+    "professional": "Rewrite the summary in a polished, professional tone.",
+    "ats": "Rewrite the summary to be ATS-friendly: use standard role keywords already present, plain formatting, no emojis or symbols.",
+    "target": "Tailor the summary toward the stated target role using only the details already provided.",
+}
+
+
+async def rewrite_summary(text: str, action: str, target_role: str = "") -> str:
+    """AI edit of an existing summary. The AI may only rephrase the facts
+    already present in the text — it must never invent experience,
+    companies, metrics, certifications or technologies."""
+    instruction = REWRITE_ACTIONS.get(action, REWRITE_ACTIONS["improve"])
+    target_role_line = f"Target role: {target_role}\n" if target_role else ""
+    prompt = f"""{instruction}
+{target_role_line}Existing summary (the ONLY facts you may use — do not add, invent or imply anything not present):
+\"\"\"
+{text}
+\"\"\"
+
+Rules:
+- Use ONLY the facts in the existing summary.
+- Never invent companies, job titles, experience, metrics, certifications, achievements or technologies.
+- Keep it factual, 2-3 sentences, no emojis or special symbols.
+
+Rewritten summary:"""
+    return await _call_groq(prompt)
+
+
 async def _call_groq(prompt: str) -> str:
     settings = get_settings()
     if not settings.GROQ_API_KEY:

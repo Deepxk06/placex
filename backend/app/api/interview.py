@@ -41,7 +41,7 @@ async def start_interview(interview_type: str = "technical", uid: str = Depends(
     async with get_db()() as session:
         questions = HR_QUESTIONS if interview_type == "hr" else TECHNICAL_QUESTIONS
         qs = [{"question": q, "category": interview_type, "audioUrl": "", "transcript": ""} for q in questions[:5]]
-        doc = Interview(id=uuid.uuid4(), user_id=uid, type=interview_type, status="in_progress", questions=qs,
+        doc = Interview(id=str(uuid.uuid4()), user_id=uid, type=interview_type, status="in_progress", questions=qs,
                         created_at=datetime.now(timezone.utc))
         session.add(doc)
         await session.commit()
@@ -52,7 +52,7 @@ async def start_interview(interview_type: str = "technical", uid: str = Depends(
 async def submit_interview_audio(interview_id: str, question_index: int, audio_data: str,
                                  uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        stmt = select(Interview).where(Interview.id == uuid.UUID(interview_id), Interview.user_id == uid)
+        stmt = select(Interview).where(Interview.id == str(uuid.UUID(interview_id)), Interview.user_id == uid)
         interview = (await session.execute(stmt)).scalar_one_or_none()
         if not interview:
             raise HTTPException(404, "Interview not found")
@@ -69,7 +69,7 @@ async def submit_interview_audio(interview_id: str, question_index: int, audio_d
 @router.get("/{interview_id}/report")
 async def get_interview_report(interview_id: str, uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        stmt = select(Interview).where(Interview.id == uuid.UUID(interview_id), Interview.user_id == uid)
+        stmt = select(Interview).where(Interview.id == str(uuid.UUID(interview_id)), Interview.user_id == uid)
         interview = (await session.execute(stmt)).scalar_one_or_none()
         if not interview:
             raise HTTPException(404, "Interview not found")

@@ -54,6 +54,7 @@ export default function Dashboard() {
   const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState(dashboardMock)
+  const [userProfile, setUserProfile] = useState(null)
 
   useEffect(() => {
     api
@@ -65,6 +66,7 @@ export default function Dashboard() {
           statCards: mergeStatsFromApi(d),
           recentActivity: mapRecentActivity(d.recentActivity),
         })
+        if (d.userProfile) setUserProfile(d.userProfile)
       })
       .catch(() => {
         setData(dashboardMock)
@@ -72,14 +74,15 @@ export default function Dashboard() {
       .finally(() => setLoading(false))
   }, [])
 
+  const profile = userProfile || {}
   const name =
-    user?.profile?.name || user?.name || user?.email?.split('@')[0] || dashboardMock.student.name
+    profile.name || user?.profile?.name || user?.name || user?.email?.split('@')[0] || dashboardMock.student.name
 
   if (loading) return <DashboardSkeleton />
 
   return (
     <div className="space-y-6">
-      <WelcomeHeader name={name} readiness={data.readinessScore} statCards={data.statCards} />
+      <WelcomeHeader name={name} readiness={data.readinessScore} statCards={data.statCards} profile={profile} />
       <StatsGrid statCards={data.statCards} />
 
       <PlacementDrives />

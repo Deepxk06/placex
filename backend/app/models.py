@@ -1,8 +1,7 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, Enum as SAEnum, JSON, ARRAY
+from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, Text, ForeignKey, Enum as SAEnum, JSON
 from sqlalchemy.orm import DeclarativeBase, relationship
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 
 class Base(DeclarativeBase):
@@ -33,18 +32,20 @@ class User(Base):
     branch = Column(String, default="")
     cgpa = Column(Float, default=0.0)
     grad_year = Column(Integer, default=datetime.now().year)
-    skills = Column(ARRAY(String), default=list)
+    skills = Column(JSON, default=list)
     target_role = Column(String, default="")
     target_industry = Column(String, default="")
     preferred_location = Column(String, default="")
-    desired_skills = Column(ARRAY(String), default=list)
+    desired_skills = Column(JSON, default=list)
     projects = Column(JSON, default=list)
     current_company = Column(String, default="")
     current_role = Column(String, default="")
     experience_years = Column(Integer, default=0)
     mentorship_available = Column(Boolean, default=False)
-    expertise = Column(ARRAY(String), default=list)
+    expertise = Column(JSON, default=list)
     linked_in = Column(String, default="")
+    career_type = Column(String, default="technical")
+    onboarding_complete = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), default=utcnow)
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
@@ -57,6 +58,9 @@ class User(Base):
     sent_requests = relationship("ConnectRequest", foreign_keys="ConnectRequest.from_user_id", back_populates="sender")
     received_requests = relationship("ConnectRequest", foreign_keys="ConnectRequest.to_user_id", back_populates="receiver")
     profile = relationship("UserProfile", back_populates="user", uselist=False)
+    certificates = relationship("Certificate", back_populates="user")
+    job_applications = relationship("JobApplication", back_populates="user")
+    learning_progress = relationship("LearningProgress", back_populates="user")
 
 
 class UserProfile(Base):
@@ -143,7 +147,7 @@ class Job(Base):
     company = Column(String, nullable=False)
     location = Column(String, default="")
     description = Column(Text, default="")
-    required_skills = Column(ARRAY(String), default=list)
+    required_skills = Column(JSON, default=list)
     type = Column(String, default="fulltime")
     salary_min = Column(Float, nullable=True)
     salary_max = Column(Float, nullable=True)
@@ -171,7 +175,7 @@ class ScrapedJob(Base):
     salary_text = Column(String, default="")
     salary_min = Column(Float, nullable=True)
     salary_max = Column(Float, nullable=True)
-    skills = Column(ARRAY(String), default=list)
+    skills = Column(JSON, default=list)
     role = Column(String, default="")
     job_type = Column(String, default="fulltime")
     posted_date = Column(DateTime(timezone=True), nullable=True)
@@ -187,19 +191,24 @@ class Company(Base):
     website = Column(String, default="")
     salaries = Column(JSON, default=list)
     interview_experiences = Column(JSON, default=list)
-    required_skills = Column(ARRAY(String), default=list)
+    required_skills = Column(JSON, default=list)
     faqs = Column(JSON, default=list)
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
 
 class Resume(Base):
     __tablename__ = "resumes"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     original_file = Column(String, default="")
     parsed_data = Column(JSON, default=dict)
+    analysis = Column(JSON, default=dict)
+    resume_score = Column(Float, nullable=True)
     ats_score = Column(Float, nullable=True)
     jd_match_score = Column(Float, nullable=True)
+    storage_key = Column(String, default="")
+    file_type = Column(String, default="")
+    file_size = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
     user = relationship("User", back_populates="resumes")
@@ -207,7 +216,7 @@ class Resume(Base):
 
 class ResumeTemplate(Base):
     __tablename__ = "resume_templates"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     name = Column(String, nullable=False)
     target_role = Column(String, nullable=False)
     sections = Column(JSON, default=list)
@@ -217,9 +226,13 @@ class ResumeTemplate(Base):
 
 class ResumeBuilder(Base):
     __tablename__ = "resume_builder"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.uid"), nullable=False)
-    template_id = Column(String, nullable=True)
+    name = Column(String, default="Untitled Resume")
+    target_role = Column(String, default="")
+    experience_level = Column(String, default="fresher")
+    template_id = Column(String, default="classic")
+    version = Column(Integer, default=1)
     sections = Column(JSON, default=list)
     customizations = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), default=utcnow)
@@ -232,14 +245,14 @@ class CodingProblem(Base):
     title = Column(String, nullable=False)
     slug = Column(String, unique=True, nullable=False)
     difficulty = Column(String, default="easy")
-    topics = Column(ARRAY(String), default=list)
-    companies = Column(ARRAY(String), default=list)
+    topics = Column(JSON, default=list)
+    companies = Column(JSON, default=list)
     description = Column(Text, default="")
     examples = Column(JSON, default=list)
     constraints = Column(Text, default="")
     test_cases = Column(JSON, default=list)
     hidden_test_cases = Column(JSON, default=list)
-    hints = Column(ARRAY(String), default=list)
+    hints = Column(JSON, default=list)
     solution = Column(JSON, default=dict)
     time_limit = Column(Integer, default=1000)
     memory_limit = Column(Integer, default=256)
@@ -255,7 +268,7 @@ class AptitudeQuestion(Base):
     subtopic = Column(String, default="")
     difficulty = Column(String, default="medium")
     question = Column(Text, nullable=False)
-    options = Column(ARRAY(String), nullable=False)
+    options = Column(JSON, nullable=False)
     correct_index = Column(Integer, nullable=False)
     explanation = Column(Text, default="")
     time_limit = Column(Integer, default=60)
@@ -264,7 +277,7 @@ class AptitudeQuestion(Base):
 
 class Assessment(Base):
     __tablename__ = "assessments"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     type = Column(String, nullable=False)
     score = Column(Float, default=0)
@@ -280,7 +293,7 @@ class Assessment(Base):
 
 class Interview(Base):
     __tablename__ = "interviews"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     type = Column(String, default="technical")
     status = Column(String, default="pending")
@@ -295,12 +308,12 @@ class Interview(Base):
 
 class Prediction(Base):
     __tablename__ = "predictions"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     placement_probability = Column(Float, default=0.0)
     expected_salary = Column(Float, default=0.0)
     predicted_role = Column(String, default="")
-    skill_recommendations = Column(ARRAY(String), default=list)
+    skill_recommendations = Column(JSON, default=list)
     features_used = Column(JSON, default=dict)
     created_at = Column(DateTime(timezone=True), default=utcnow)
 
@@ -309,7 +322,7 @@ class Prediction(Base):
 
 class Roadmap(Base):
     __tablename__ = "roadmaps"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     career_goal = Column(String, default="")
     timeline = Column(JSON, default=list)
@@ -335,7 +348,7 @@ class ChatHistory(Base):
 
 class ConnectRequest(Base):
     __tablename__ = "connect_requests"
-    id = Column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String, primary_key=True, default=uuid.uuid4)
     from_user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     to_user_id = Column(String, ForeignKey("users.uid"), nullable=False)
     status = Column(String, default="pending")
@@ -345,3 +358,95 @@ class ConnectRequest(Base):
 
     sender = relationship("User", foreign_keys=[from_user_id], back_populates="sent_requests")
     receiver = relationship("User", foreign_keys=[to_user_id], back_populates="received_requests")
+
+
+class Certificate(Base):
+    __tablename__ = "certificates"
+    id = Column(String, primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    name = Column(String, nullable=False)
+    issuing_org = Column(String, default="")
+    issue_date = Column(String, default="")
+    expiry_date = Column(String, default="")
+    credential_id = Column(String, default="")
+    verification_url = Column(String, default="")
+    file_data = Column(Text, default="")
+    file_type = Column(String, default="")
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    user = relationship("User", back_populates="certificates")
+
+
+class GDTopic(Base):
+    __tablename__ = "gd_topics"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=False)
+    category = Column(String, default="general")
+    description = Column(Text, default="")
+    points_for = Column(JSON, default=list)
+    points_against = Column(JSON, default=list)
+    key_arguments = Column(JSON, default=list)
+    opening_statement = Column(Text, default="")
+    conclusion = Column(Text, default="")
+    difficulty = Column(String, default="medium")
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class CompanyQuestion(Base):
+    __tablename__ = "company_questions"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    company_name = Column(String, nullable=False)
+    year = Column(Integer, nullable=False)
+    role = Column(String, default="")
+    round_name = Column(String, default="")
+    topic = Column(String, default="")
+    difficulty = Column(String, default="medium")
+    question = Column(Text, nullable=False)
+    options = Column(JSON, default=list)
+    correct_index = Column(Integer, nullable=True)
+    explanation = Column(Text, default="")
+    question_type = Column(String, default="mcq")
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class LearningTopic(Base):
+    __tablename__ = "learning_topics"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, nullable=False)
+    category = Column(String, default="technical")
+    career_type = Column(String, default="technical")
+    description = Column(Text, default="")
+    difficulty = Column(String, default="beginner")
+    subtopics = Column(JSON, default=list)
+    resources = Column(JSON, default=list)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class LearningProgress(Base):
+    __tablename__ = "learning_progress"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    topic_id = Column(Integer, ForeignKey("learning_topics.id"), nullable=False)
+    progress_pct = Column(Float, default=0.0)
+    score = Column(Float, default=0.0)
+    completed = Column(Boolean, default=False)
+    last_accessed = Column(DateTime(timezone=True), default=utcnow)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+    user = relationship("User", back_populates="learning_progress")
+
+
+class JobApplication(Base):
+    __tablename__ = "job_applications"
+    id = Column(String, primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    job_id = Column(Integer, nullable=True)
+    job_title = Column(String, default="")
+    company = Column(String, default="")
+    status = Column(String, default="applied")
+    applied_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    notes = Column(Text, default="")
+
+    user = relationship("User", back_populates="job_applications")

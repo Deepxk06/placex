@@ -23,7 +23,7 @@ export default function Projects({ data, onChange }) {
   const improveDesc = async (entry) => {
     setImproving(entry.id)
     try {
-      const { data: res } = await api.post('/api/resume-builder/improve-project', { description: entry.description })
+      const { data: res } = await api.post('/resume-builder/improve-project', { description: entry.description })
       const improved = res.improved.replace(/^\d+[\.\)]\s*/gm, '').split('\n').filter(Boolean).join(' ')
       const updated = entries.map(e => e.id === entry.id ? { ...e, description: improved || e.description } : e)
       onChange('projects', { entries: updated })

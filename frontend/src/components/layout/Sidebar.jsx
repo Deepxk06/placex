@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   LayoutDashboard,
   FileText,
+  PenSquare,
   Briefcase,
   Code2,
   Brain,
@@ -12,6 +13,10 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   TerminalSquare,
+  MessageSquare,
+  Building2,
+  BookOpen,
+  ClipboardList,
 } from 'lucide-react'
 import SidebarItem from './SidebarItem'
 import SidebarFooter from './SidebarFooter'
@@ -22,8 +27,10 @@ const NAV_GROUPS = [
     group: 'Overview',
     items: [
       { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-      { label: 'Resume', to: '/resume', icon: FileText },
+      { label: 'Build Resume', to: '/resume-builder', icon: PenSquare },
+      { label: 'Resume Analysis', to: '/resume', icon: FileText },
       { label: 'Jobs', to: '/jobs', icon: Briefcase },
+      { label: 'Applications', to: '/applications', icon: ClipboardList },
     ],
   },
   {
@@ -33,12 +40,15 @@ const NAV_GROUPS = [
       { label: 'Code Playground', to: '/code-playground', icon: TerminalSquare },
       { label: 'Aptitude', to: '/skill-assessment', query: 'tab=aptitude', icon: Brain },
       { label: 'Mock Interview', to: '/mock-interview', icon: Mic },
+      { label: 'GD Topics', to: '/gd-preparation', icon: MessageSquare },
+      { label: 'Company Questions', to: '/company-questions', icon: Building2 },
     ],
   },
   {
-    group: 'Insights',
+    group: 'Growth',
     items: [
-      { label: 'Certificates', to: '/career-roadmap', icon: Award },
+      { label: 'Learning', to: '/learning', icon: BookOpen },
+      { label: 'Certificates', to: '/certificates', icon: Award },
       { label: 'Analytics', to: '/placement-prediction', icon: TrendingUp },
       { label: 'Settings', to: '/settings', icon: Settings },
     ],

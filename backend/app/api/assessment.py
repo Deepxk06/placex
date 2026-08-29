@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Body
 from app.database import get_db
 from app.auth import verify_token
-from app.models import User, Resume, Assessment, Interview, Prediction
+from app.models import User, Resume, Assessment, Interview, Prediction, CodingProblem, AptitudeQuestion
 from app.services.code_judge import judge_submission
 from app.services.adaptive_engine import AdaptiveAptitudeEngine
 from app.services.skill_gap_analyzer import analyze_skill_gap
@@ -50,7 +50,7 @@ async def submit_aptitude(answers: list = Body(...), uid: str = Depends(verify_t
                 "explanation": q.explanation or "",
             })
         now = datetime.now(timezone.utc)
-        doc = Assessment(id=uuid.uuid4(), user_id=uid, type="aptitude", score=score, total=total,
+        doc = Assessment(id=str(uuid.uuid4()), user_id=uid, type="aptitude", score=score, total=total,
                          answers=results, completed_at=now, created_at=now)
         session.add(doc)
         await session.commit()
@@ -105,7 +105,7 @@ async def submit_coding(payload: dict = Body(...), uid: str = Depends(verify_tok
             code, language,
         )
         now = datetime.now(timezone.utc)
-        doc = Assessment(id=uuid.uuid4(), user_id=uid, type="coding",
+        doc = Assessment(id=str(uuid.uuid4()), user_id=uid, type="coding",
                          score=result["passedTestCases"], total=result["totalTestCases"],
                          answers=[{"problemId": problem_id, "language": language, "status": result["status"]}],
                          completed_at=now, created_at=now)
@@ -115,6 +115,273 @@ async def submit_coding(payload: dict = Body(...), uid: str = Depends(verify_tok
             problem.total_accepted = (problem.total_accepted or 0) + 1
         await session.commit()
     return result
+
+
+@router.get("/coding/stats")
+async def get_coding_stats(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        from app.models import CodingProblem, Assessment
+        total_stmt = select(func.count(CodingProblem.id))
+        total = (await session.execute(total_stmt)).scalar() or 0
+
+        solved_stmt = (
+            select(func.count(func.distinct(Assessment.answers["problemId"])))
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "coding")
+            .where(Assessment.score == Assessment.total)
+        )
+        solved = (await session.execute(solved_stmt)).scalar() or 0
+
+        attempted_stmt = (
+            select(func.count(Assessment.id))
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "coding")
+        )
+        attempted = (await session.execute(attempted_stmt)).scalar() or 0
+
+        easy_stmt = select(func.count(CodingProblem.id)).where(CodingProblem.difficulty == "easy")
+        easy_total = (await session.execute(easy_stmt)).scalar() or 0
+        medium_stmt = select(func.count(CodingProblem.id)).where(CodingProblem.difficulty == "medium")
+        medium_total = (await session.execute(medium_stmt)).scalar() or 0
+        hard_stmt = select(func.count(CodingProblem.id)).where(CodingProblem.difficulty == "hard")
+        hard_total = (await session.execute(hard_stmt)).scalar() or 0
+
+        return {
+            "total": total,
+            "solved": solved,
+            "attempted": attempted,
+            "accuracy": round(solved / attempted * 100, 1) if attempted else 0,
+            "easyTotal": easy_total,
+            "mediumTotal": medium_total,
+            "hardTotal": hard_total,
+        }
+
+
+@router.get("/coding/topics")
+async def get_coding_topics(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        from app.models import CodingProblem
+        stmt = select(CodingProblem)
+        result = await session.execute(stmt)
+        problems = result.scalars().all()
+
+        topic_counts = {}
+        for p in problems:
+            for t in (p.topics or []):
+                topic_counts[t] = topic_counts.get(t, 0) + 1
+
+        topics = [{"name": k, "count": v} for k, v in sorted(topic_counts.items(), key=lambda x: -x[1])]
+        return topics
+
+
+@router.get("/coding/recent-activity")
+async def get_coding_recent_activity(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        from app.models import Assessment, CodingProblem
+        stmt = (
+            select(Assessment)
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "coding")
+            .order_by(Assessment.created_at.desc())
+            .limit(10)
+        )
+        result = await session.execute(stmt)
+        assessments = result.scalars().all()
+
+        activities = []
+        for a in assessments:
+            problem_id = None
+            lang = ""
+            if a.answers and len(a.answers) > 0:
+                ans = a.answers[0]
+                problem_id = ans.get("problemId")
+                lang = ans.get("language", "")
+
+            problem_title = ""
+            difficulty = ""
+            if problem_id:
+                problem = await session.get(CodingProblem, int(problem_id))
+                if problem:
+                    problem_title = problem.title
+                    difficulty = problem.difficulty
+
+            activities.append({
+                "id": str(a.id),
+                "problemId": problem_id,
+                "problemTitle": problem_title,
+                "difficulty": difficulty,
+                "language": lang,
+                "score": a.score,
+                "total": a.total,
+                "status": "accepted" if a.score == a.total else "wrong",
+                "completedAt": a.completed_at.isoformat() if a.completed_at else "",
+            })
+
+        return activities
+
+
+@router.get("/aptitude/stats")
+async def get_aptitude_stats(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        total_stmt = select(func.count(AptitudeQuestion.id))
+        total = (await session.execute(total_stmt)).scalar() or 0
+
+        solved_stmt = (
+            select(func.count(Assessment.id))
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "aptitude")
+            .where(Assessment.score == Assessment.total)
+        )
+        solved = (await session.execute(solved_stmt)).scalar() or 0
+
+        attempted_stmt = (
+            select(func.count(Assessment.id))
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "aptitude")
+        )
+        attempted = (await session.execute(attempted_stmt)).scalar() or 0
+
+        easy_stmt = select(func.count(AptitudeQuestion.id)).where(AptitudeQuestion.difficulty == "easy")
+        easy_total = (await session.execute(easy_stmt)).scalar() or 0
+        medium_stmt = select(func.count(AptitudeQuestion.id)).where(AptitudeQuestion.difficulty == "medium")
+        medium_total = (await session.execute(medium_stmt)).scalar() or 0
+        hard_stmt = select(func.count(AptitudeQuestion.id)).where(AptitudeQuestion.difficulty == "hard")
+        hard_total = (await session.execute(hard_stmt)).scalar() or 0
+
+        return {
+            "total": total,
+            "solved": solved,
+            "attempted": attempted,
+            "accuracy": round(solved / attempted * 100, 1) if attempted else 0,
+            "easyTotal": easy_total,
+            "mediumTotal": medium_total,
+            "hardTotal": hard_total,
+        }
+
+
+@router.get("/aptitude/topics")
+async def get_aptitude_topics(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        stmt = select(AptitudeQuestion)
+        result = await session.execute(stmt)
+        questions = result.scalars().all()
+
+        topic_counts = {}
+        for q in questions:
+            t = q.topic or "General"
+            topic_counts[t] = topic_counts.get(t, 0) + 1
+
+        topics = [{"name": k, "count": v} for k, v in sorted(topic_counts.items(), key=lambda x: -x[1])]
+        return topics
+
+
+@router.get("/aptitude/recent-activity")
+async def get_aptitude_recent_activity(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        stmt = (
+            select(Assessment)
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "aptitude")
+            .order_by(Assessment.created_at.desc())
+            .limit(10)
+        )
+        result = await session.execute(stmt)
+        assessments = result.scalars().all()
+
+        activities = []
+        for a in assessments:
+            percentage = round(a.score / a.total * 100, 1) if a.total else 0
+            activities.append({
+                "id": str(a.id),
+                "score": a.score,
+                "total": a.total,
+                "percentage": percentage,
+                "status": "passed" if percentage >= 60 else "failed",
+                "completedAt": a.completed_at.isoformat() if a.completed_at else "",
+            })
+        return activities
+
+
+@router.get("/mcq/stats")
+async def get_mcq_stats(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        total_stmt = select(func.count(AptitudeQuestion.id))
+        total = (await session.execute(total_stmt)).scalar() or 0
+
+        solved_stmt = (
+            select(func.count(Assessment.id))
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "mcq")
+            .where(Assessment.score == Assessment.total)
+        )
+        solved = (await session.execute(solved_stmt)).scalar() or 0
+
+        attempted_stmt = (
+            select(func.count(Assessment.id))
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "mcq")
+        )
+        attempted = (await session.execute(attempted_stmt)).scalar() or 0
+
+        easy_stmt = select(func.count(AptitudeQuestion.id)).where(AptitudeQuestion.difficulty == "easy")
+        easy_total = (await session.execute(easy_stmt)).scalar() or 0
+        medium_stmt = select(func.count(AptitudeQuestion.id)).where(AptitudeQuestion.difficulty == "medium")
+        medium_total = (await session.execute(medium_stmt)).scalar() or 0
+        hard_stmt = select(func.count(AptitudeQuestion.id)).where(AptitudeQuestion.difficulty == "hard")
+        hard_total = (await session.execute(hard_stmt)).scalar() or 0
+
+        return {
+            "total": total,
+            "solved": solved,
+            "attempted": attempted,
+            "accuracy": round(solved / attempted * 100, 1) if attempted else 0,
+            "easyTotal": easy_total,
+            "mediumTotal": medium_total,
+            "hardTotal": hard_total,
+        }
+
+
+@router.get("/mcq/topics")
+async def get_mcq_topics(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        stmt = select(AptitudeQuestion)
+        result = await session.execute(stmt)
+        questions = result.scalars().all()
+
+        topic_counts = {}
+        for q in questions:
+            t = q.topic or "General"
+            topic_counts[t] = topic_counts.get(t, 0) + 1
+
+        topics = [{"name": k, "count": v} for k, v in sorted(topic_counts.items(), key=lambda x: -x[1])]
+        return topics
+
+
+@router.get("/mcq/recent-activity")
+async def get_mcq_recent_activity(uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        stmt = (
+            select(Assessment)
+            .where(Assessment.user_id == uid)
+            .where(Assessment.type == "mcq")
+            .order_by(Assessment.created_at.desc())
+            .limit(10)
+        )
+        result = await session.execute(stmt)
+        assessments = result.scalars().all()
+
+        activities = []
+        for a in assessments:
+            percentage = round(a.score / a.total * 100, 1) if a.total else 0
+            activities.append({
+                "id": str(a.id),
+                "score": a.score,
+                "total": a.total,
+                "percentage": percentage,
+                "status": "passed" if percentage >= 60 else "failed",
+                "completedAt": a.completed_at.isoformat() if a.completed_at else "",
+            })
+        return activities
 
 
 @router.get("/mcq")
