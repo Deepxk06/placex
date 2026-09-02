@@ -143,7 +143,7 @@ async def health():
 
 
 from app.api import auth, resume, assessment, interview, prediction, jobs, roadmap, dashboard, chatbot, company, admin, alumni, resume_builder, profile, compiler
-from app.api import certificates, gd, company_questions, learning, job_applications
+from app.api import certificates, gd, company_questions, learning, job_applications, coding
 
 app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(resume.router, prefix="/api/resume", tags=["Resume"])
@@ -165,3 +165,4 @@ app.include_router(gd.router, prefix="/api/gd", tags=["Group Discussion"])
 app.include_router(company_questions.router, prefix="/api/company-questions", tags=["Company Questions"])
 app.include_router(learning.router, prefix="/api/learning", tags=["Learning"])
 app.include_router(job_applications.router, prefix="/api/job-applications", tags=["Job Applications"])
+app.include_router(coding.router, prefix="/api/coding", tags=["Coding Workspace"])

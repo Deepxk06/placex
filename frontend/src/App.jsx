@@ -25,6 +25,7 @@ const GDPreparation = lazy(() => import('./pages/GDPreparation'))
 const CompanyQuestions = lazy(() => import('./pages/CompanyQuestions'))
 const LearningModule = lazy(() => import('./pages/LearningModule'))
 const Applications = lazy(() => import('./pages/Applications'))
+const CodingWorkspace = lazy(() => import('./pages/coding/CodingWorkspace'))
 
 const TITLES = {
   '/login': 'Sign In - PlaceX',
@@ -49,12 +50,17 @@ const TITLES = {
   '/company-questions': 'Company Questions - PlaceX',
   '/learning': 'Learning Module - PlaceX',
   '/applications': 'Applications - PlaceX',
+  '/coding/problem': 'Coding Problem - PlaceX',
 }
 
 function PageTitle() {
   const { pathname } = useLocation()
   useEffect(() => {
-    document.title = TITLES[pathname] || 'PlaceX - AI Placement Platform'
+    if (pathname.startsWith('/coding/problem/')) {
+      document.title = 'Coding Problem - PlaceX'
+    } else {
+      document.title = TITLES[pathname] || 'PlaceX - AI Placement Platform'
+    }
   }, [pathname])
   return null
 }
@@ -97,6 +103,7 @@ export default function App() {
             <Route path="/company-questions" element={<CompanyQuestions />} />
             <Route path="/learning" element={<LearningModule />} />
             <Route path="/applications" element={<Applications />} />
+            <Route path="/coding/problem/:problemId" element={<CodingWorkspace />} />
           </Route>
         </Routes>
       </Suspense>

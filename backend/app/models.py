@@ -450,3 +450,43 @@ class JobApplication(Base):
     notes = Column(Text, default="")
 
     user = relationship("User", back_populates="job_applications")
+
+
+class CodingSubmission(Base):
+    __tablename__ = "coding_submissions"
+    id = Column(String, primary_key=True, default=uuid.uuid4)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    problem_id = Column(Integer, ForeignKey("coding_problems.id"), nullable=False)
+    language = Column(String, nullable=False)
+    code = Column(Text, nullable=False)
+    status = Column(String, default="pending")
+    passed_test_cases = Column(Integer, default=0)
+    total_test_cases = Column(Integer, default=0)
+    runtime_ms = Column(Integer, default=0)
+    memory_mb = Column(Float, default=0.0)
+    test_results = Column(JSON, default=list)
+    error = Column(Text, default="")
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class CodingBookmark(Base):
+    __tablename__ = "coding_bookmarks"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    problem_id = Column(Integer, ForeignKey("coding_problems.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class CodingProgress(Base):
+    __tablename__ = "coding_progress"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    problem_id = Column(Integer, ForeignKey("coding_problems.id"), nullable=False)
+    status = Column(String, default="attempted")
+    best_status = Column(String, default="")
+    best_runtime_ms = Column(Integer, default=0)
+    best_memory_mb = Column(Float, default=0.0)
+    submission_count = Column(Integer, default=0)
+    first_solved_at = Column(DateTime(timezone=True), nullable=True)
+    last_attempted_at = Column(DateTime(timezone=True), default=utcnow)
+    created_at = Column(DateTime(timezone=True), default=utcnow)

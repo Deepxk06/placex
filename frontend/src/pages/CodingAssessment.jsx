@@ -186,7 +186,7 @@ export default function CodingAssessment() {
               <div
                 key={problem._id || i}
                 className="card hover:border-primary-300 dark:hover:border-primary-700 transition-colors cursor-pointer"
-                onClick={() => navigate(`/code-playground?problem=${problem._id}`)}
+                onClick={() => navigate(`/coding/problem/${problem._id}`)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">
