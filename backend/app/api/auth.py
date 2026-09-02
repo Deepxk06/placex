@@ -62,7 +62,11 @@ async def get_me(uid: str = Depends(verify_token)):
     async with get_db()() as session:
         user = await session.get(User, uid)
         if not user:
-            raise HTTPException(404, "User not found")
+            now = datetime.now(timezone.utc)
+            user = User(uid=uid, email="", name=uid.replace("_", " ").title(), role="student", created_at=now, updated_at=now)
+            session.add(user)
+            await session.commit()
+            await session.refresh(user)
         return {c.name: getattr(user, c.name) for c in User.__table__.columns}
 
 

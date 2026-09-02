@@ -15,8 +15,10 @@ export default function SkillAssessment() {
     return TABS.includes(t) ? t : 'coding'
   })
 
+  const isCoding = tab === 'coding'
+
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className={isCoding ? 'space-y-6' : 'space-y-6 max-w-5xl'}>
       <h1 className="text-2xl font-bold">Skill Assessment</h1>
       <div className="flex flex-wrap gap-2 border-b border-gray-200 pb-2">
         {[

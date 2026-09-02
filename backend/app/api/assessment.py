@@ -57,70 +57,9 @@ async def submit_aptitude(answers: list = Body(...), uid: str = Depends(verify_t
     return {"score": score, "total": total, "percentage": round(score / total * 100, 2) if total else 0, "results": results}
 
 
-@router.get("/coding")
-async def get_coding_problems(difficulty: str = "", topic: str = "", uid: str = Depends(verify_token)):
-    async with get_db()() as session:
-        from app.models import CodingProblem
-        stmt = select(CodingProblem)
-        if difficulty:
-            stmt = stmt.where(CodingProblem.difficulty == difficulty)
-        if topic:
-            stmt = stmt.where(CodingProblem.topics.any(topic))
-        result = await session.execute(stmt.limit(50))
-        problems = result.scalars().all()
-        return [{"_id": str(p.id), "title": p.title, "slug": p.slug, "difficulty": p.difficulty,
-                 "topics": p.topics, "companies": p.companies, "description": p.description,
-                 "examples": p.examples, "constraints": p.constraints, "hints": p.hints} for p in problems]
-
-
-@router.get("/coding/{problem_id}")
-async def get_coding_problem(problem_id: str, uid: str = Depends(verify_token)):
-    async with get_db()() as session:
-        from app.models import CodingProblem
-        problem = await session.get(CodingProblem, int(problem_id))
-        if not problem:
-            raise HTTPException(404, "Problem not found")
-        return {"_id": str(problem.id), "title": problem.title, "slug": problem.slug, "difficulty": problem.difficulty,
-                "topics": problem.topics, "companies": problem.companies, "description": problem.description,
-                "examples": problem.examples, "constraints": problem.constraints, "hints": problem.hints,
-                "testCases": problem.test_cases, "timeLimit": problem.time_limit, "memoryLimit": problem.memory_limit}
-
-
-@router.post("/coding/submit")
-async def submit_coding(payload: dict = Body(...), uid: str = Depends(verify_token)):
-    problem_id = str(payload.get("problem_id") or "").strip()
-    language = str(payload.get("language") or "").strip()
-    code = str(payload.get("code") or "")
-    if not problem_id or not language or not code:
-        raise HTTPException(400, "problem_id, language and code are required")
-    if not problem_id.isdigit():
-        raise HTTPException(400, "Invalid problem_id")
-    async with get_db()() as session:
-        from app.models import CodingProblem
-        problem = await session.get(CodingProblem, int(problem_id))
-        if not problem:
-            raise HTTPException(404, "Problem not found")
-        result = await judge_submission(
-            {"testCases": problem.test_cases, "hiddenTestCases": problem.hidden_test_cases, "timeLimit": problem.time_limit},
-            code, language,
-        )
-        now = datetime.now(timezone.utc)
-        doc = Assessment(id=str(uuid.uuid4()), user_id=uid, type="coding",
-                         score=result["passedTestCases"], total=result["totalTestCases"],
-                         answers=[{"problemId": problem_id, "language": language, "status": result["status"]}],
-                         completed_at=now, created_at=now)
-        session.add(doc)
-        problem.total_submissions = (problem.total_submissions or 0) + 1
-        if result["status"] == "accepted":
-            problem.total_accepted = (problem.total_accepted or 0) + 1
-        await session.commit()
-    return result
-
-
 @router.get("/coding/stats")
 async def get_coding_stats(uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        from app.models import CodingProblem, Assessment
         total_stmt = select(func.count(CodingProblem.id))
         total = (await session.execute(total_stmt)).scalar() or 0
 
@@ -160,7 +99,6 @@ async def get_coding_stats(uid: str = Depends(verify_token)):
 @router.get("/coding/topics")
 async def get_coding_topics(uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        from app.models import CodingProblem
         stmt = select(CodingProblem)
         result = await session.execute(stmt)
         problems = result.scalars().all()
@@ -177,7 +115,6 @@ async def get_coding_topics(uid: str = Depends(verify_token)):
 @router.get("/coding/recent-activity")
 async def get_coding_recent_activity(uid: str = Depends(verify_token)):
     async with get_db()() as session:
-        from app.models import Assessment, CodingProblem
         stmt = (
             select(Assessment)
             .where(Assessment.user_id == uid)
@@ -218,6 +155,63 @@ async def get_coding_recent_activity(uid: str = Depends(verify_token)):
             })
 
         return activities
+
+
+@router.get("/coding")
+async def get_coding_problems(difficulty: str = "", topic: str = "", uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        stmt = select(CodingProblem)
+        if difficulty:
+            stmt = stmt.where(CodingProblem.difficulty == difficulty)
+        if topic:
+            stmt = stmt.where(CodingProblem.topics.any(topic))
+        result = await session.execute(stmt.limit(50))
+        problems = result.scalars().all()
+        return [{"_id": str(p.id), "title": p.title, "slug": p.slug, "difficulty": p.difficulty,
+                 "topics": p.topics, "companies": p.companies, "description": p.description,
+                 "examples": p.examples, "constraints": p.constraints, "hints": p.hints} for p in problems]
+
+
+@router.post("/coding/submit")
+async def submit_coding(payload: dict = Body(...), uid: str = Depends(verify_token)):
+    problem_id = str(payload.get("problem_id") or "").strip()
+    language = str(payload.get("language") or "").strip()
+    code = str(payload.get("code") or "")
+    if not problem_id or not language or not code:
+        raise HTTPException(400, "problem_id, language and code are required")
+    if not problem_id.isdigit():
+        raise HTTPException(400, "Invalid problem_id")
+    async with get_db()() as session:
+        problem = await session.get(CodingProblem, int(problem_id))
+        if not problem:
+            raise HTTPException(404, "Problem not found")
+        result = await judge_submission(
+            {"testCases": problem.test_cases, "hiddenTestCases": problem.hidden_test_cases, "timeLimit": problem.time_limit},
+            code, language,
+        )
+        now = datetime.now(timezone.utc)
+        doc = Assessment(id=str(uuid.uuid4()), user_id=uid, type="coding",
+                         score=result["passedTestCases"], total=result["totalTestCases"],
+                         answers=[{"problemId": problem_id, "language": language, "status": result["status"]}],
+                         completed_at=now, created_at=now)
+        session.add(doc)
+        problem.total_submissions = (problem.total_submissions or 0) + 1
+        if result["status"] == "accepted":
+            problem.total_accepted = (problem.total_accepted or 0) + 1
+        await session.commit()
+    return result
+
+
+@router.get("/coding/{problem_id}")
+async def get_coding_problem(problem_id: str, uid: str = Depends(verify_token)):
+    async with get_db()() as session:
+        problem = await session.get(CodingProblem, int(problem_id))
+        if not problem:
+            raise HTTPException(404, "Problem not found")
+        return {"_id": str(problem.id), "title": problem.title, "slug": problem.slug, "difficulty": problem.difficulty,
+                "topics": problem.topics, "companies": problem.companies, "description": problem.description,
+                "examples": problem.examples, "constraints": problem.constraints, "hints": problem.hints,
+                "testCases": problem.test_cases, "timeLimit": problem.time_limit, "memoryLimit": problem.memory_limit}
 
 
 @router.get("/aptitude/stats")

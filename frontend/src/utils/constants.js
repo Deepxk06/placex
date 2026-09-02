@@ -8,8 +8,21 @@ export const DIFFICULTIES = ['easy', 'medium', 'hard']
 
 export const CODING_TOPICS = [
   'arrays', 'strings', 'hash-table', 'linked-list', 'stack', 'queue',
-  'trees', 'graphs', 'dynamic-programming', 'greedy', 'sorting', 'searching',
+  'trees', 'binary-tree', 'graphs', 'dynamic-programming', 'greedy',
+  'sorting', 'searching', 'binary-search', 'sliding-window', 'two-pointers',
+  'recursion', 'heap', 'math', 'bit-manipulation', 'backtracking',
+  'depth-first-search', 'breadth-first-search', 'divide-and-conquer',
 ]
+
+export const CODING_SORT_OPTIONS = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'most-solved', label: 'Most Solved' },
+  { value: 'recently-added', label: 'Recently Added' },
+  { value: 'easy-hard', label: 'Easy → Hard' },
+  { value: 'hard-easy', label: 'Hard → Easy' },
+]
+
+export const DIFFICULTY_ORDER = { easy: 0, medium: 1, hard: 2 }
 
 export const ASSESSMENT_TYPES = {
   APTITUDE: 'aptitude',
