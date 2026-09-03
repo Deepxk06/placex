@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Menu, ChevronDown, UserRound, LogOut, Search, Settings, HelpCircle } from 'lucide-react'
+import { AnimatePresence, motion } from 'framer-motion'
 import NotificationBell from '../notifications/NotificationBell'
 import { useAuth } from '../../store/authStore'
 import api from '../../services/api'
