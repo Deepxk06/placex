@@ -490,3 +490,112 @@ class CodingProgress(Base):
     first_solved_at = Column(DateTime(timezone=True), nullable=True)
     last_attempted_at = Column(DateTime(timezone=True), default=utcnow)
     created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class Notification(Base):
+    __tablename__ = "notifications"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    title = Column(String, nullable=False)
+    message = Column(Text, nullable=False)
+    type = Column(String, default="info")
+    link = Column(String, default="")
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class Contest(Base):
+    __tablename__ = "contests"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, default="")
+    problem_ids = Column(JSON, default=list)
+    duration_minutes = Column(Integer, default=60)
+    difficulty = Column(String, default="medium")
+    status = Column(String, default="upcoming")
+    max_participants = Column(Integer, default=0)
+    prize = Column(String, default="")
+    start_time = Column(DateTime(timezone=True), nullable=True)
+    end_time = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class ContestRegistration(Base):
+    __tablename__ = "contest_registrations"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    contest_id = Column(Integer, ForeignKey("contests.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    registered_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class ContestSubmission(Base):
+    __tablename__ = "contest_submissions"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    contest_id = Column(Integer, ForeignKey("contests.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    problem_id = Column(Integer, ForeignKey("coding_problems.id"), nullable=False)
+    language = Column(String, nullable=False)
+    code = Column(Text, nullable=False)
+    status = Column(String, default="pending")
+    passed_test_cases = Column(Integer, default=0)
+    total_test_cases = Column(Integer, default=0)
+    runtime_ms = Column(Integer, default=0)
+    score = Column(Float, default=0.0)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class PlacementDrive(Base):
+    __tablename__ = "placement_drives"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    company_name = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+    description = Column(Text, default="")
+    location = Column(String, default="")
+    salary_range = Column(String, default="")
+    eligibility_cgpa = Column(Float, default=0.0)
+    eligible_branches = Column(JSON, default=list)
+    required_skills = Column(JSON, default=list)
+    drive_date = Column(DateTime(timezone=True), nullable=True)
+    application_deadline = Column(DateTime(timezone=True), nullable=True)
+    total_positions = Column(Integer, default=0)
+    status = Column(String, default="upcoming")
+    created_by = Column(String, default="")
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class PlacementDriveRegistration(Base):
+    __tablename__ = "placement_drive_registrations"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    drive_id = Column(Integer, ForeignKey("placement_drives.id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    status = Column(String, default="registered")
+    registered_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class DailyPractice(Base):
+    __tablename__ = "daily_practice"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.uid"), nullable=False)
+    date = Column(String, nullable=False)
+    coding_ids = Column(JSON, default=list)
+    aptitude_ids = Column(JSON, default=list)
+    mcq_ids = Column(JSON, default=list)
+    completed_coding = Column(JSON, default=list)
+    completed_aptitude = Column(JSON, default=list)
+    completed_mcq = Column(JSON, default=list)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+
+class UserStreak(Base):
+    __tablename__ = "user_streaks"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey("users.uid"), unique=True, nullable=False)
+    current_streak = Column(Integer, default=0)
+    longest_streak = Column(Integer, default=0)
+    total_practice_days = Column(Integer, default=0)
+    last_practice_date = Column(String, default="")
+    xp = Column(Integer, default=0)
+    level = Column(Integer, default=1)
+    badges = Column(JSON, default=list)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

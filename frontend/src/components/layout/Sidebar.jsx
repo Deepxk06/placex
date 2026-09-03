@@ -17,6 +17,9 @@ import {
   Building2,
   BookOpen,
   ClipboardList,
+  Trophy,
+  Target,
+  BriefcaseBusiness,
 } from 'lucide-react'
 import SidebarItem from './SidebarItem'
 import SidebarFooter from './SidebarFooter'
@@ -36,17 +39,20 @@ const NAV_GROUPS = [
   {
     group: 'Practice',
     items: [
+      { label: 'Daily Practice', to: '/daily-practice', icon: Target },
       { label: 'Coding', to: '/skill-assessment', query: 'tab=coding', icon: Code2 },
       { label: 'Code Playground', to: '/code-playground', icon: TerminalSquare },
       { label: 'Aptitude', to: '/skill-assessment', query: 'tab=aptitude', icon: Brain },
       { label: 'Mock Interview', to: '/mock-interview', icon: Mic },
       { label: 'GD Topics', to: '/gd-preparation', icon: MessageSquare },
       { label: 'Company Questions', to: '/company-questions', icon: Building2 },
+      { label: 'Contests', to: '/contests', icon: Trophy },
     ],
   },
   {
     group: 'Growth',
     items: [
+      { label: 'Placement Drives', to: '/placement-drives', icon: BriefcaseBusiness },
       { label: 'Learning', to: '/learning', icon: BookOpen },
       { label: 'Certificates', to: '/certificates', icon: Award },
       { label: 'Analytics', to: '/placement-prediction', icon: TrendingUp },

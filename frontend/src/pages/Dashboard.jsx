@@ -13,6 +13,8 @@ import RecentActivity from '../components/dashboard/RecentActivity'
 import NotificationsPanel from '../components/dashboard/NotificationsPanel'
 import PlacementAnalytics from '../components/dashboard/PlacementAnalytics'
 import DashboardSkeleton from '../components/dashboard/DashboardSkeleton'
+import ProblemOfTheDay from '../components/dashboard/ProblemOfTheDay'
+import ProfileCompletionBanner from '../components/dashboard/ProfileCompletionBanner'
 
 const activityMeta = {
   resume: { icon: FileUp, color: 'bg-sky-500' },
@@ -82,8 +84,11 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      <ProfileCompletionBanner />
       <WelcomeHeader name={name} readiness={data.readinessScore} statCards={data.statCards} profile={profile} />
       <StatsGrid statCards={data.statCards} />
+
+      <ProblemOfTheDay />
 
       <PlacementDrives />
 

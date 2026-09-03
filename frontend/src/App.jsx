@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Layout from './components/layout/Layout'
 import ProtectedRoute from './components/layout/ProtectedRoute'
+import useKeyboardShortcuts from './hooks/useKeyboardShortcuts'
 
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
@@ -26,6 +27,9 @@ const CompanyQuestions = lazy(() => import('./pages/CompanyQuestions'))
 const LearningModule = lazy(() => import('./pages/LearningModule'))
 const Applications = lazy(() => import('./pages/Applications'))
 const CodingWorkspace = lazy(() => import('./pages/coding/CodingWorkspace'))
+const ContestsPage = lazy(() => import('./pages/ContestsPage'))
+const DailyPractice = lazy(() => import('./pages/DailyPractice'))
+const PlacementDrives = lazy(() => import('./pages/PlacementDrives'))
 
 const TITLES = {
   '/login': 'Sign In - PlaceX',
@@ -51,6 +55,9 @@ const TITLES = {
   '/learning': 'Learning Module - PlaceX',
   '/applications': 'Applications - PlaceX',
   '/coding/problem': 'Coding Problem - PlaceX',
+  '/contests': 'Contests & Leaderboards - PlaceX',
+  '/daily-practice': 'Daily Practice - PlaceX',
+  '/placement-drives': 'Placement Drives - PlaceX',
 }
 
 function PageTitle() {
@@ -73,10 +80,16 @@ function PageFallback() {
   )
 }
 
+function KeyboardShortcuts() {
+  useKeyboardShortcuts()
+  return null
+}
+
 export default function App() {
   return (
     <>
       <PageTitle />
+      <KeyboardShortcuts />
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<Navigate to="/login" replace />} />
@@ -104,6 +117,9 @@ export default function App() {
             <Route path="/learning" element={<LearningModule />} />
             <Route path="/applications" element={<Applications />} />
             <Route path="/coding/problem/:problemId" element={<CodingWorkspace />} />
+            <Route path="/contests" element={<ContestsPage />} />
+            <Route path="/daily-practice" element={<DailyPractice />} />
+            <Route path="/placement-drives" element={<PlacementDrives />} />
           </Route>
         </Routes>
       </Suspense>

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Menu, ChevronDown, UserRound, LogOut, Search, Bell, Settings, HelpCircle } from 'lucide-react'
+import { Menu, ChevronDown, UserRound, LogOut, Search, Settings, HelpCircle } from 'lucide-react'
+import NotificationBell from '../notifications/NotificationBell'
 import { useAuth } from '../../store/authStore'
 import api from '../../services/api'
 import { cn } from '../../utils/helpers'
@@ -13,10 +14,8 @@ export default function Navbar({ onMenuClick }) {
   const navigate = useNavigate()
   const [photo, setPhoto] = useState(localStorage.getItem('placex_photo') || '')
   const [profileOpen, setProfileOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
   const [query, setQuery] = useState('')
   const profileRef = useRef(null)
-  const notifRef = useRef(null)
 
   useEffect(() => {
     api
@@ -33,7 +32,6 @@ export default function Navbar({ onMenuClick }) {
   useEffect(() => {
     const handler = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) setProfileOpen(false)
-      if (notifRef.current && !notifRef.current.contains(e.target)) setNotifOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
@@ -82,48 +80,7 @@ export default function Navbar({ onMenuClick }) {
 
         <div className="flex items-center gap-1.5 sm:gap-2 ml-auto">
           {/* Notifications */}
-          <div ref={notifRef} className="relative">
-            <button
-              onClick={() => setNotifOpen((o) => !o)}
-              className="relative p-2.5 rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              aria-label="Notifications"
-            >
-              <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white dark:ring-gray-900" />
-            </button>
-            <AnimatePresence>
-              {notifOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                  transition={{ duration: 0.16 }}
-                  className="absolute right-0 top-full mt-2 w-80 glass rounded-2xl shadow-soft-lg p-2 z-50"
-                >
-                  <div className="px-3 py-2 flex items-center justify-between border-b border-gray-200/70 dark:border-gray-800/70">
-                    <p className="text-sm font-bold text-gray-800 dark:text-white">Notifications</p>
-                    <Badge tone="brand">{dashboardMock.notifications.length} new</Badge>
-                  </div>
-                  <div className="max-h-80 overflow-y-auto mt-1">
-                    {dashboardMock.notifications.map((n) => (
-                      <div
-                        key={n.id}
-                        className="flex gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors cursor-pointer"
-                      >
-                        <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white ${n.color}`}>
-                          <n.icon size={14} />
-                        </span>
-                        <div>
-                          <p className="text-xs text-gray-700 dark:text-gray-200 leading-snug">{n.text}</p>
-                          <p className="text-[10px] text-gray-400 mt-0.5">{n.time}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <NotificationBell />
 
           {/* Profile dropdown */}
           <div ref={profileRef} className="relative">
