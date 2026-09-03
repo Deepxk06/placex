@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Sparkles, ArrowRight, Code2 } from 'lucide-react'
+import { Sparkles, ArrowRight } from 'lucide-react'
 import api from '../../services/api'
 
 export default function ProblemOfTheDay() {

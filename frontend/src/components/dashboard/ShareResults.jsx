@@ -1,4 +1,4 @@
-import { Share2, Twitter, Linkedin, Link2, Check } from 'lucide-react'
+import { Twitter, Linkedin, Link2, Check } from 'lucide-react'
 import { useState } from 'react'
 
 export default function ShareResults({ type = 'coding', data = {} }) {

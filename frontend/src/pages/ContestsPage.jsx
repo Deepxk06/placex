@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Trophy, Clock, Users, Flame, ChevronRight, Medal, Star, Zap } from 'lucide-react'
+import { Trophy, Clock, Users, ChevronRight, Medal, Star, Zap } from 'lucide-react'
 import api from '../services/api'
 import { useAuth } from '../store/authStore'
 import { cn } from '../utils/helpers'
@@ -42,12 +42,6 @@ export default function ContestsPage() {
     easy: 'text-green-600',
     medium: 'text-amber-600',
     hard: 'text-rose-600',
-  }
-
-  const badgeIcons = {
-    '7_day_streak': { icon: Flame, color: 'text-orange-500', label: '7-Day Streak' },
-    '30_day_streak': { icon: Flame, color: 'text-red-500', label: '30-Day Streak' },
-    'centurion': { icon: Star, color: 'text-yellow-500', label: 'Centurion' },
   }
 
   return (

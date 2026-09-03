@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AnimatePresence, motion } from 'framer-motion'
 import { Menu, ChevronDown, UserRound, LogOut, Search, Settings, HelpCircle } from 'lucide-react'
 import NotificationBell from '../notifications/NotificationBell'
 import { useAuth } from '../../store/authStore'
 import api from '../../services/api'
 import { cn } from '../../utils/helpers'
-import { dashboardMock } from '../../data/dashboardMock'
-import { Badge } from '../ui/Badge'
 
 export default function Navbar({ onMenuClick }) {
   const { user, logout } = useAuth()

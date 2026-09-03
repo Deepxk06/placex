@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Briefcase, MapPin, Calendar, Users, CheckCircle2, Clock, Building2, IndianRupee, GraduationCap, ChevronDown } from 'lucide-react'
+import { Briefcase, MapPin, Calendar, Users, CheckCircle2, Clock, Building2, IndianRupee, GraduationCap } from 'lucide-react'
 import api from '../services/api'
 import { useAuth } from '../store/authStore'
 import { cn } from '../utils/helpers'
